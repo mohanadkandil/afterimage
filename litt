@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+project_dir="$(cd "$(dirname "$0")" && pwd)"
+app="$project_dir/build/Litt.app"
+if [[ ! -x "$app/Contents/MacOS/Litt" ]]; then
+  echo 'Build first: ./scripts/build.sh' >&2
+  exit 1
+fi
+if [[ $# -eq 0 ]]; then
+  open "$app"
+else
+  exec "$app/Contents/MacOS/Litt" "$@"
+fi

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' litt:; img-src 'self' litt: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'"
+    />
+    <title>Litt</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Litt home"
+        ><span class="brand-mark"><i></i><i></i><i></i></span
+        ><span>litt<span class="brand-dot">.</span></span></a
+      >
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 4 4" /></svg
+        ><input
+          id="search"
+          placeholder="Find something you saw…"
+          autocomplete="off"
+          aria-label="Search screen text"
+        /><kbd>/</kbd
+        ><button
+          id="clearSearch"
+          class="clear hidden"
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+      </div>
+      <div class="header-actions">
+        <span id="recordState" class="state"><i></i>Paused</span
+        ><button id="record" class="record">
+          <span class="record-dot"></span
+          ><span id="recordLabel">Start recording</span></button
+        ><button
+          id="settingsButton"
+          class="icon-button"
+          title="Settings"
+          aria-label="Settings"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M4 7h16M4 17h16" />
+            <circle cx="9" cy="7" r="3" />
+            <circle cx="15" cy="17" r="3" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <div id="notice" class="notice hidden" role="status"></div>
+    <div class="workspace">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="eyebrow">YOUR LOCAL MEMORY</div>
+          <div class="heading-row">
+            <h1 id="dayTitle">Today</h1>
+            <button id="today" class="subtle" title="Go to today">
+              Today ↗
+            </button>
+          </div>
+          <label class="date-control"
+            ><svg viewBox="0 0 24 24">
+              <rect x="4" y="5" width="16" height="16" rx="3" />
+              <path d="M8 3v4m8-4v4M4 11h16" /></svg
+            ><input id="date" type="date" aria-label="Recording date" /></label
+          ><label class="app-select"
+            ><span>APPLICATION</span
+            ><select id="appFilter">
+              <option value="">All applications</option>
+            </select></label
+          >
+          <div class="list-heading">
+            <span id="listLabel">Captured moments</span
+            ><span id="resultCount">0</span>
+          </div>
+        </div>
+        <div id="results" class="results" aria-label="Captured moments"></div>
+        <div class="page-controls">
+          <button id="newer" class="load-more hidden">← Newer</button
+          ><button id="loadMore" class="load-more hidden">Earlier →</button>
+        </div>
+        <div class="sidebar-footer">
+          <span class="local-dot"></span><span>Stored on this Mac</span
+          ><button id="import" title="Import screenshots">Import ↗</button>
+        </div>
+      </aside>
+      <main>
+        <div class="viewer-heading">
+          <div class="breadcrumb">
+            <span>Archive</span><span>/</span
+            ><strong id="currentApp">Your screen, remembered</strong>
+          </div>
+          <div class="viewer-actions">
+            <button id="textButton" class="subtle" disabled>
+              Text & evidence</button
+            ><button
+              id="exportButton"
+              class="icon-button"
+              disabled
+              aria-label="Export screenshot"
+              title="Export screenshot"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <section id="stage" class="stage" aria-label="Screenshot viewer">
+          <div id="empty" class="empty">
+            <div class="empty-art">
+              <div></div>
+              <div></div>
+              <div>
+                <span class="brand-mark"><i></i><i></i><i></i></span>
+              </div>
+            </div>
+            <span class="eyebrow">A LITTLE LESS FORGETTING</span>
+            <h2>Your day has a rewind button.</h2>
+            <p>
+              Keep the moments you might need again.<br />Find a phrase, revisit
+              a page, pick up a thought.
+            </p>
+            <button id="emptyRecord" class="primary">
+              Start your first recording <span>↗</span></button
+            ><button id="emptyImport" class="subtle">
+              Or import screenshots to try search
+            </button>
+            <div class="empty-note">
+              On-device text recognition · Local storage · You're in control
+            </div>
+          </div>
+          <div id="imageArea" class="image-area hidden">
+            <div id="imageCanvas" class="image-canvas">
+              <img id="screenshot" alt="Selected captured screen" />
+              <div id="boxes" class="boxes"></div>
+            </div>
+          </div>
+          <div id="frameBadge" class="frame-badge hidden">
+            <span id="badgeDot"></span><span id="badgeApp"></span
+            ><span class="divider"></span><time id="badgeTime"></time>
+          </div>
+          <button
+            id="prev"
+            class="stage-arrow previous hidden"
+            aria-label="Previous moment"
+          >
+            ‹</button
+          ><button
+            id="next"
+            class="stage-arrow next hidden"
+            aria-label="Next moment"
+          >
+            ›
+          </button>
+          <div id="zoomControls" class="zoom-controls hidden">
+            <button id="zoomOut" aria-label="Zoom out">−</button
+            ><span id="zoomLabel">Fit</span
+            ><button id="zoomIn" aria-label="Zoom in">+</button>
+          </div>
+        </section>
+        <div class="frame-caption">
+          <span id="frameTitle">Recording is off until you start it.</span
+          ><span id="frameInfo"></span>
+        </div>
+        <section class="timeline-panel">
+          <div class="timeline-heading">
+            <div class="playback">
+              <button
+                id="play"
+                class="play-button"
+                disabled
+                aria-label="Play captured moments"
+              >
+                ▶</button
+              ><button
+                id="back"
+                class="icon-button"
+                disabled
+                aria-label="Previous moment"
+              >
+                ‹</button
+              ><button
+                id="forward"
+                class="icon-button"
+                disabled
+                aria-label="Next moment"
+              >
+                ›</button
+              ><time id="playTime">—</time><span id="playDate"></span>
+            </div>
+            <div class="timeline-meta">
+              <span id="rangeLabel">No moments yet</span
+              ><select id="speed" aria-label="Playback speed">
+                <option value="1000">1×</option>
+                <option value="500">2×</option>
+                <option value="250">4×</option>
+              </select>
+            </div>
+          </div>
+          <div
+            id="timeline"
+            class="timeline"
+            tabindex="0"
+            role="slider"
+            aria-label="Recording timeline"
+            aria-valuemin="0"
+            aria-valuemax="0"
+            aria-valuenow="0"
+          >
+            <div id="ticks" class="ticks"></div>
+            <div id="bands" class="bands"></div>
+            <div id="playhead" class="playhead hidden">
+              <span></span><i></i>
+            </div>
+          </div>
+          <div class="timeline-footer">
+            <div id="legend" class="legend"></div>
+            <span
+              >← → to browse <span class="keyboard-sep">·</span> space to play
+              moments</span
+            >
+          </div>
+        </section>
+      </main>
+      <aside id="evidence" class="evidence hidden">
+        <div class="evidence-heading">
+          <h2>Text & evidence</h2>
+          <button
+            id="closeEvidence"
+            class="icon-button"
+            aria-label="Close evidence"
+          >
+            ×
+          </button>
+        </div>
+        <dl id="metadata"></dl>
+        <div class="text-heading">
+          <span>RECOGNIZED TEXT</span
+          ><button id="copyText" class="subtle">Copy</button>
+        </div>
+        <pre id="ocrText"></pre>
+        <p class="evidence-note">
+          Text comes from on-device OCR and may contain mistakes. The screenshot
+          is the original evidence.
+        </p>
+        <button id="deleteFrame" class="danger subtle">
+          Delete this moment
+        </button>
+      </aside>
+    </div>
+    <dialog id="settingsDialog">
+      <form id="settingsForm">
+        <div class="modal-heading">
+          <div>
+            <span class="eyebrow">MAKE SPACE FOR WHAT MATTERS</span>
+            <h2>Your memory, your rules.</h2>
+          </div>
+          <button
+            type="button"
+            id="closeSettings"
+            class="icon-button"
+            aria-label="Close settings"
+          >
+            ×
+          </button>
+        </div>
+        <div class="settings-grid">
+          <label
+            >Capture interval<select id="interval">
+              <option value="1">Every second</option>
+              <option value="2">Every 2 seconds</option>
+              <option value="5">Every 5 seconds</option>
+              <option value="10">Every 10 seconds</option>
+              <option value="30">Every 30 seconds</option></select
+            ><small
+              >Similar frames are skipped; unchanged screens get a checkpoint
+              every 30 seconds.</small
+            ></label
+          ><label
+            >Keep history for<select id="retention">
+              <option value="1">1 day</option>
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+              <option value="90">90 days</option>
+              <option value="365">1 year</option></select
+            ><small
+              >Older screenshots and their search entries are deleted hourly,
+              when this is saved, and on app launch.</small
+            ></label
+          >
+        </div>
+        <div class="settings-section">
+          <h3>Excluded applications</h3>
+          <p>
+            Their windows are excluded. Recording waits whenever an excluded app
+            is focused.
+          </p>
+          <div id="excludedApps" class="excluded-apps"></div>
+          <label class="custom-exclusion"
+            >Additional bundle IDs
+            <input
+              id="customExcluded"
+              placeholder="com.example.private, com.example.other"
+            /><small
+              >Comma-separated. Litt always excludes itself.</small
+            ></label
+          >
+        </div>
+        <div class="settings-section permissions">
+          <div>
+            <h3 id="permissionTitle">Screen Recording permission</h3>
+            <p id="permissionDescription"></p>
+          </div>
+          <button type="button" id="permissionButton" class="secondary">
+            Open System Settings ↗
+          </button>
+        </div>
+        <div class="settings-section archive-settings">
+          <div>
+            <h3>Local archive</h3>
+            <p id="storageInfo"></p>
+            <small id="performanceInfo"></small>
+          </div>
+          <button type="button" id="reveal" class="subtle">
+            Show in Finder ↗</button
+          ><button type="button" id="clearArchive" class="danger subtle">
+            Delete all history
+          </button>
+        </div>
+        <div class="modal-footer">
+          <span>No uploads. No account. No microphone recording.</span
+          ><button id="saveSettings" class="primary" type="submit">
+            Save settings
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="confirmDialog">
+      <h2 id="confirmTitle">Delete this moment?</h2>
+      <p id="confirmDescription"></p>
+      <div class="confirm-actions">
+        <button id="cancelConfirm" class="secondary">Cancel</button
+        ><button id="acceptConfirm" class="danger-button">Delete</button>
+      </div>
+    </dialog>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
