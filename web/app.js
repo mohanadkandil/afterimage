@@ -262,7 +262,7 @@ function select(id, scroll = true) {
   if (scroll)
     $("results")
       .querySelector(".selected")
-      ?.scrollIntoView({ block: "nearest" });
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
   fit();
   highlight();
   renderEvidence();
@@ -708,7 +708,10 @@ document.addEventListener("keydown", (e) => {
     ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)
   )
     return;
-  if (e.key === "/") {
+  if (e.key === "Escape") {
+    $("evidence").classList.add("hidden");
+    $("textButton").focus();
+  } else if (e.key === "/") {
     e.preventDefault();
     $("search").focus();
   } else if (e.key === "ArrowLeft") {
@@ -731,6 +734,16 @@ window.runSmokeTest = async () => {
     const checks = {
       nativeBridge: typeof s.count === "number",
       layout: document.documentElement.scrollWidth <= innerWidth,
+      fullWidthViewer:
+        $("stage").getBoundingClientRect().width > innerWidth * 0.9,
+      noSidebar: !document.querySelector(".sidebar"),
+      horizontalMoments: getComputedStyle($("results")).display === "flex",
+      controlsVisible:
+        document.querySelector(".timeline-panel").getBoundingClientRect()
+          .bottom <= innerHeight,
+      toolbarFits:
+        document.querySelector(".archive-toolbar").scrollWidth <=
+        document.querySelector(".archive-toolbar").clientWidth,
     };
     if (frames.length) {
       select(frames[0].id);

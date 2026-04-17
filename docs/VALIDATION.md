@@ -9,10 +9,12 @@ Tested on this Mac: Apple Silicon, macOS 26.6, Apple Clang 17, CMake 4.4.3, syst
 - Native CLI integration: real Apple Vision OCR on a labeled test image; exact token retrieval (`seahorse742`), OCR box bounds, search misses, app/time/offset filters, JPEG export, overwrite refusal, malformed input handling, deletion and image removal.
 - Actual WKWebView desktop checks using isolated archives: native message bridge, image loading through the custom scheme, OCR search and highlights, navigation between two images, settings, evidence panel and no document overflow.
 - Empty archive desktop check: empty state and capture disabled on launch.
+- Sidebar-free redesign verified at 1380 × 900 and compact 840 × 578 content sizes: full-width viewer, horizontal moments, visible playback controls and toolbar without overflow. Native snapshots were visually inspected; compact empty-state clipping was fixed.
+- Desktop dark appearance verified. Light appearance and a recorded motion/performance pass were not part of this update.
 - JavaScript syntax and shell-script syntax checks.
 - Local ad-hoc code signing.
 
-The automated release test suites completed in 1.26 seconds on the final verification run. This is test runtime, **not a capture/search performance benchmark**. A separate one-image experiment using a user-supplied screenshot produced 122 OCR boxes and retrieved the image for the term `Clang`; that screenshot is not bundled in the repository.
+The automated release test suites completed in 0.54 seconds on the latest verification run. This is test runtime, **not a capture/search performance benchmark**. A separate one-image experiment using a user-supplied screenshot produced 122 OCR boxes and retrieved the image for the term `Clang`; that screenshot is not bundled in the repository.
 
 Native UI results: [populated](ui-populated-check.json), [empty](ui-empty-check.json). The saved [first-launch view](first-launch.png) and [search/evidence view](search-evidence.png) are screenshots of the actual native app. The latter uses the clearly labeled test fixture, not invented recorded activity.
 

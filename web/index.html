@@ -55,42 +55,25 @@
     </header>
     <div id="notice" class="notice hidden" role="status"></div>
     <div class="workspace">
-      <aside class="sidebar">
-        <div class="sidebar-top">
-          <div class="eyebrow">YOUR LOCAL MEMORY</div>
-          <div class="heading-row">
+      <main>
+        <div class="archive-toolbar">
+          <div class="day-heading">
             <h1 id="dayTitle">Today</h1>
-            <button id="today" class="subtle" title="Go to today">
-              Today ↗
+            <span class="toolbar-divider"></span>
+            <label class="date-control"
+              ><input id="date" type="date" aria-label="Recording date"
+            /></label>
+            <button id="today" class="subtle" title="Go to today">Today</button>
+          </div>
+          <div class="archive-filters">
+            <select id="appFilter" aria-label="Filter by application">
+              <option value="">All applications</option>
+            </select>
+            <button id="import" class="secondary" title="Import screenshots">
+              Import screenshots ↗
             </button>
           </div>
-          <label class="date-control"
-            ><svg viewBox="0 0 24 24">
-              <rect x="4" y="5" width="16" height="16" rx="3" />
-              <path d="M8 3v4m8-4v4M4 11h16" /></svg
-            ><input id="date" type="date" aria-label="Recording date" /></label
-          ><label class="app-select"
-            ><span>APPLICATION</span
-            ><select id="appFilter">
-              <option value="">All applications</option>
-            </select></label
-          >
-          <div class="list-heading">
-            <span id="listLabel">Captured moments</span
-            ><span id="resultCount">0</span>
-          </div>
         </div>
-        <div id="results" class="results" aria-label="Captured moments"></div>
-        <div class="page-controls">
-          <button id="newer" class="load-more hidden">← Newer</button
-          ><button id="loadMore" class="load-more hidden">Earlier →</button>
-        </div>
-        <div class="sidebar-footer">
-          <span class="local-dot"></span><span>Stored on this Mac</span
-          ><button id="import" title="Import screenshots">Import ↗</button>
-        </div>
-      </aside>
-      <main>
         <div class="viewer-heading">
           <div class="breadcrumb">
             <span>Archive</span><span>/</span
@@ -128,7 +111,7 @@
               a page, pick up a thought.
             </p>
             <button id="emptyRecord" class="primary">
-              Start your first recording <span>↗</span></button
+              Start recording <span>↗</span></button
             ><button id="emptyImport" class="subtle">
               Or import screenshots to try search
             </button>
@@ -169,6 +152,22 @@
           <span id="frameTitle">Recording is off until you start it.</span
           ><span id="frameInfo"></span>
         </div>
+        <section class="moments-panel" aria-label="Browse moments">
+          <div class="moments-heading">
+            <div class="list-heading">
+              <span id="listLabel">Captured moments</span
+              ><span id="resultCount">0</span>
+            </div>
+            <div class="page-controls">
+              <button id="newer" class="load-more hidden">← Newer</button
+              ><button id="loadMore" class="load-more hidden">Earlier →</button>
+            </div>
+            <span class="local-label"
+              ><span class="local-dot"></span> Stored on this Mac</span
+            >
+          </div>
+          <div id="results" class="results" aria-label="Captured moments"></div>
+        </section>
         <section class="timeline-panel">
           <div class="timeline-heading">
             <div class="playback">

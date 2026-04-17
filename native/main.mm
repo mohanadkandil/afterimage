@@ -290,6 +290,8 @@ static int cli(int argc, char **argv) {
   window.minSize = NSMakeSize(840, 600);
   window.delegate = self;
   window.contentView = web;
+  if (!smokeOutput.empty() && getenv("LITT_SMOKE_COMPACT"))
+    [window setContentSize:NSMakeSize(840, 578)];
   window.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
   [window center];
   [window makeKeyAndOrderFront:nil];
