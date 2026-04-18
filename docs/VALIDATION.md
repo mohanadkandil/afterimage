@@ -14,7 +14,7 @@ Tested on this Mac: Apple Silicon, macOS 26.6, Apple Clang 17, CMake 4.4.3, syst
 - JavaScript syntax and shell-script syntax checks.
 - Local ad-hoc code signing.
 
-The automated release test suites completed in 0.54 seconds on the latest verification run. This is test runtime, **not a capture/search performance benchmark**. A separate one-image experiment using a user-supplied screenshot produced 122 OCR boxes and retrieved the image for the term `Clang`; that screenshot is not bundled in the repository.
+The automated release test suites completed in 0.58 seconds on the latest verification run. This is test runtime, **not a capture/search performance benchmark**. A separate one-image experiment using a user-supplied screenshot produced 122 OCR boxes and retrieved the image for the term `Clang`; that screenshot is not bundled in the repository.
 
 Native UI results: [populated](ui-populated-check.json), [empty](ui-empty-check.json). The saved [first-launch view](first-launch.png) and [search/evidence view](search-evidence.png) are screenshots of the actual native app. The latter uses the clearly labeled test fixture, not invented recorded activity.
 
@@ -34,3 +34,5 @@ To finish the live check:
 8. Run a longer capture to measure CPU, memory, archive growth and processing latency before making performance claims.
 
 No hosted CI run, notarization, external distribution, or push to GitHub was performed.
+
+UI refinement: reduced border and corner treatments, combined utilities into one toolbar, shortened empty-state copy, removed decorative stacked cards, and flattened the timeline. Native empty/populated checks passed at both window sizes.

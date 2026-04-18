@@ -184,6 +184,7 @@ async function load() {
 function renderList() {
   const list = $("results");
   list.replaceChildren();
+  document.body.classList.toggle("has-moments", frames.length > 0);
   if (!frames.length) {
     list.append(
       node(
@@ -199,6 +200,7 @@ function renderList() {
   for (const f of frames.slice().reverse()) {
     const b = node("button", "moment");
     b.dataset.id = f.id;
+    b.title = `${f.app} · ${clock(f.time)}\n${f.title}`;
     b.setAttribute("aria-label", `${f.app}, ${clock(f.time)}, ${f.title}`);
     const img = node("img");
     img.src = `litt://frame/${f.id}`;
@@ -296,12 +298,10 @@ function showEmpty() {
   $("screenshot").removeAttribute("src");
   const title = $("empty").querySelector("h2"),
     p = $("empty").querySelector("p");
-  title.textContent = query
-    ? "Nothing matches just yet."
-    : "Your day has a rewind button.";
+  title.textContent = query ? "No matching moments." : "A place to return to.";
   p.textContent = query
     ? "Try fewer words, another date, or a different application."
-    : "Keep the moments you might need again. Find a phrase, revisit a page, pick up a thought.";
+    : "Find what you saw. Pick up where you left off.";
 }
 function fit() {
   if (!current) return;
@@ -494,6 +494,7 @@ async function settings() {
     const available = new Set(state.runningApps.map((a) => a.bundle));
     const list = $("excludedApps");
     list.replaceChildren();
+    document.body.classList.toggle("has-moments", frames.length > 0);
     for (const a of state.runningApps) {
       const label = node("label"),
         input = node("input");

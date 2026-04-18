@@ -56,10 +56,11 @@
     <div id="notice" class="notice hidden" role="status"></div>
     <div class="workspace">
       <main>
+        <span id="currentApp" class="hidden"></span>
         <div class="archive-toolbar">
           <div class="day-heading">
-            <h1 id="dayTitle">Today</h1>
-            <span class="toolbar-divider"></span>
+            <h1 id="dayTitle" class="hidden">Today</h1>
+
             <label class="date-control"
               ><input id="date" type="date" aria-label="Recording date"
             /></label>
@@ -70,54 +71,38 @@
               <option value="">All applications</option>
             </select>
             <button id="import" class="secondary" title="Import screenshots">
-              Import screenshots ↗
+              Import
             </button>
-          </div>
-        </div>
-        <div class="viewer-heading">
-          <div class="breadcrumb">
-            <span>Archive</span><span>/</span
-            ><strong id="currentApp">Your screen, remembered</strong>
-          </div>
-          <div class="viewer-actions">
-            <button id="textButton" class="subtle" disabled>
-              Text & evidence</button
-            ><button
-              id="exportButton"
-              class="icon-button"
-              disabled
-              aria-label="Export screenshot"
-              title="Export screenshot"
-            >
-              <svg viewBox="0 0 24 24">
-                <path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5" />
-              </svg>
-            </button>
+            <div class="viewer-actions">
+              <button id="textButton" class="subtle" disabled>Details</button
+              ><button
+                id="exportButton"
+                class="icon-button"
+                disabled
+                aria-label="Export screenshot"
+                title="Export screenshot"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
         <section id="stage" class="stage" aria-label="Screenshot viewer">
           <div id="empty" class="empty">
-            <div class="empty-art">
+            <div class="empty-art" aria-hidden="true">
               <div></div>
               <div></div>
               <div>
                 <span class="brand-mark"><i></i><i></i><i></i></span>
               </div>
             </div>
-            <span class="eyebrow">A LITTLE LESS FORGETTING</span>
-            <h2>Your day has a rewind button.</h2>
-            <p>
-              Keep the moments you might need again.<br />Find a phrase, revisit
-              a page, pick up a thought.
-            </p>
-            <button id="emptyRecord" class="primary">
-              Start recording <span>↗</span></button
-            ><button id="emptyImport" class="subtle">
-              Or import screenshots to try search
-            </button>
-            <div class="empty-note">
-              On-device text recognition · Local storage · You're in control
-            </div>
+            <h2>A place to return to.</h2>
+            <p>Find what you saw. Pick up where you left off.</p>
+            <button id="emptyRecord" class="primary">Start recording</button
+            ><button id="emptyImport" class="subtle">Import screenshots</button>
+            <div class="empty-note">Private. On this Mac.</div>
           </div>
           <div id="imageArea" class="image-area hidden">
             <div id="imageCanvas" class="image-canvas">
