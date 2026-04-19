@@ -4,19 +4,20 @@ Tested on this Mac: Apple Silicon, macOS 26.6, Apple Clang 17, CMake 4.4.3, syst
 
 ## Passed
 
-- Release build, C++20 core and Objective-C++ desktop executable.
-- C++ archive tests: insertion/reopen, literal FTS escaping, AND queries, application/time filtering, retention, settings validation and persistence, concurrent app-style reads/CLI-style writes, image/index deletion, change-gate decisions.
-- Native CLI integration: real Apple Vision OCR on a labeled test image; exact token retrieval (`seahorse742`), OCR box bounds, search misses, app/time/offset filters, JPEG export, overwrite refusal, malformed input handling, deletion and image removal.
-- Actual WKWebView desktop checks using isolated archives: native message bridge, image loading through the custom scheme, OCR search and highlights, navigation between two images, settings, evidence panel and no document overflow.
-- Empty archive desktop check: empty state and capture disabled on launch.
-- Sidebar-free redesign verified at 1380 × 900 and compact 840 × 578 content sizes: full-width viewer, horizontal moments, visible playback controls and toolbar without overflow. Native snapshots were visually inspected; compact empty-state clipping was fixed.
-- Desktop dark appearance verified. Light appearance and a recorded motion/performance pass were not part of this update.
-- JavaScript syntax and shell-script syntax checks.
-- Local ad-hoc code signing.
+- Release C++20 / Objective-C++ build with AppKit; WebKit and web UI resources removed.
+- C++ archive suite: persistence, FTS escaping, filters, retention, concurrent access and change detection.
+- Native CLI integration: real Vision OCR, exact-token retrieval, JPEG export, malformed imports and deletion.
+- Native AppKit smoke checks using isolated archives: image rendering, OCR search/highlights, search misses, app names/filtering, date filtering, previous/next navigation, scrubbing, zoom, evidence and settings sheet.
+- Empty/populated layouts inspected at regular and compact window sizes. Light and dark appearances inspected using native view snapshots.
+- Core and native OCR/CLI suites pass. Their sub-second runtime is not a capture/search performance benchmark.
 
-The automated release test suites completed in 0.58 seconds on the latest verification run. This is test runtime, **not a capture/search performance benchmark**. A separate one-image experiment using a user-supplied screenshot produced 122 OCR boxes and retrieved the image for the term `Clang`; that screenshot is not bundled in the repository.
+Results: [populated](ui-populated-check.json), [empty](ui-empty-check.json), [compact populated](ui-compact-populated-check.json), [compact empty](ui-compact-empty-check.json). Screenshots show the actual AppKit app with a labeled test fixture, never fabricated user activity. The UI smoke entry point exercises programmatic AppKit actions; it does not establish full manual mouse/keyboard coverage or a measured animation frame rate.
 
-Native UI results: [populated](ui-populated-check.json), [empty](ui-empty-check.json). The saved [first-launch view](first-launch.png) and [search/evidence view](search-evidence.png) are screenshots of the actual native app. The latter uses the clearly labeled test fixture, not invented recorded activity.
+## Remaining UI validation
+
+- Extended archives, many app transitions, sustained playback and responsiveness under heavy capture load need longer testing.
+- Native file dialogs and destructive confirmation paths have been implemented; automated coverage checks the underlying CLI operations, not every dialog interaction.
+- No global summon hotkey, timeline scale zoom, or macOS HUD desktop dimming is implemented. Image zoom and in-window keyboard navigation are available.
 
 ## Pending permission-dependent validation
 
@@ -34,5 +35,3 @@ To finish the live check:
 8. Run a longer capture to measure CPU, memory, archive growth and processing latency before making performance claims.
 
 No hosted CI run, notarization, external distribution, or push to GitHub was performed.
-
-UI refinement: reduced border and corner treatments, combined utilities into one toolbar, shortened empty-state copy, removed decorative stacked cards, and flattened the timeline. Native empty/populated checks passed at both window sizes.

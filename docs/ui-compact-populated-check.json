@@ -1,1 +1,1 @@
-{"passed":true,"checks":{"nativeBridge":true,"layout":true,"fullWidthViewer":true,"noSidebar":true,"horizontalMoments":true,"controlsVisible":true,"toolbarFits":true,"actualImage":true,"search":true,"highlights":true,"navigation":true,"settings":true,"evidence":true},"count":2}
+{"checks":{"appFilter":true,"appNames":true,"canvasFits":true,"controlsVisible":true,"dateFilter":true,"evidence":true,"imageLoaded":true,"nativeAppKit":true,"navigation":true,"ocrHighlights":true,"scrub":true,"search":true,"searchMiss":true,"settings":true,"zoom":true},"passed":true}

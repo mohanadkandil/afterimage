@@ -1,10 +1,10 @@
+#import "NativeUI.hpp"
 #include "store.hpp"
 #import <Cocoa/Cocoa.h>
 #import <ImageIO/ImageIO.h>
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <Vision/Vision.h>
-#import <WebKit/WebKit.h>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -222,11 +222,11 @@ static int cli(int argc, char **argv) {
     return 1;
   }
 }
-@interface App
-    : NSObject <NSApplicationDelegate, WKScriptMessageHandler,
-                WKURLSchemeHandler, WKNavigationDelegate, NSWindowDelegate> {
+@interface App : NSObject <NSApplicationDelegate, NSWindowDelegate> {
   NSWindow *window;
-  WKWebView *web;
+  NativeUI *nativeUI;
+  NSMutableDictionary *callbacks;
+  NSInteger nextRequest;
   NSStatusItem *statusItem;
   NSMenuItem *recordingItem;
   NSTimer *timer;
@@ -239,6 +239,7 @@ static int cli(int argc, char **argv) {
   ChangeGate gate;
   json preferences;
 }
+- (void)performAction:(NSDictionary *)body;
 @end
 @implementation App
 - (void)applicationDidFinishLaunching:(NSNotification *)n {
@@ -272,13 +273,7 @@ static int cli(int argc, char **argv) {
   editItem.submenu = edit;
   [main addItem:editItem];
   NSApp.mainMenu = main;
-  WKWebViewConfiguration *cfg = [[WKWebViewConfiguration alloc] init];
-  [cfg.userContentController addScriptMessageHandler:self name:@"litt"];
-  [cfg setURLSchemeHandler:self forURLScheme:@"litt"];
-  web = [[WKWebView alloc] initWithFrame:NSMakeRect(0, 0, 1380, 900)
-                           configuration:cfg];
-  web.navigationDelegate = self;
-  web.inspectable = YES;
+  callbacks = [NSMutableDictionary new];
   window = [[NSWindow alloc]
       initWithContentRect:NSMakeRect(0, 0, 1380, 900)
                 styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
@@ -289,16 +284,42 @@ static int cli(int argc, char **argv) {
   window.title = @"Litt";
   window.minSize = NSMakeSize(840, 600);
   window.delegate = self;
-  window.contentView = web;
+  __weak App *weakSelf = self;
+  nativeUI = [[NativeUI alloc]
+      initWithRequest:^(NSString *action, json args, UICompletion completion) {
+        App *owner = weakSelf;
+        if (!owner)
+          return;
+        NSString *identity =
+            [NSString stringWithFormat:@"%ld", ++owner->nextRequest];
+        owner->callbacks[identity] = [completion copy];
+        NSDictionary *arguments = [NSJSONSerialization
+            JSONObjectWithData:[ns(args.dump())
+                                   dataUsingEncoding:NSUTF8StringEncoding]
+                       options:0
+                         error:nil];
+        [owner performAction:@{
+          @"id" : identity,
+          @"action" : action,
+          @"args" : arguments ?: @{}
+        }];
+      }
+            imageRoot:ns(archive->root().string())];
+  window.contentViewController = nativeUI;
+  [window setContentSize:NSMakeSize(1380, 900)];
+  if (!smokeOutput.empty() && getenv("LITT_SMOKE_LIGHT"))
+    window.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
   if (!smokeOutput.empty() && getenv("LITT_SMOKE_COMPACT"))
     [window setContentSize:NSMakeSize(840, 578)];
-  window.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
   [window center];
   [window makeKeyAndOrderFront:nil];
-  [web loadRequest:[NSURLRequest
-                       requestWithURL:
-                           [NSURL
-                               URLWithString:@"litt://app/index.html"]]];
+  NSMenuItem *settings = [appMenu insertItemWithTitle:@"Settings…"
+                                               action:@selector(showSettings:)
+                                        keyEquivalent:@","
+                                              atIndex:1];
+  settings.target = nativeUI;
+  if (!smokeOutput.empty())
+    [nativeUI smoke:ns(smokeOutput)];
   statusItem = [[NSStatusBar systemStatusBar]
       statusItemWithLength:NSVariableStatusItemLength];
   statusItem.button.title = @"◉";
@@ -647,23 +668,12 @@ static int cli(int argc, char **argv) {
   return j;
 }
 - (void)reply:(id)request result:(json)value error:(std::string)error {
-  json answer = {
-      {"id", str([request description])}, {"result", value}, {"error", error}};
-  [web evaluateJavaScript:ns("window.littReceive(" +
-                             answer.dump(-1, ' ', false,
-                                         json::error_handler_t::replace) +
-                             ")")
-        completionHandler:nil];
+  UICompletion completion = callbacks[request];
+  [callbacks removeObjectForKey:request];
+  if (completion)
+    completion(value, error);
 }
-- (void)userContentController:(WKUserContentController *)controller
-      didReceiveScriptMessage:(WKScriptMessage *)message {
-  (void)controller;
-  if (!message.frameInfo.isMainFrame ||
-      ![message.frameInfo.request.URL.host isEqualToString:@"app"])
-    return;
-  NSDictionary *body = message.body;
-  if (![body isKindOfClass:NSDictionary.class])
-    return;
+- (void)performAction:(NSDictionary *)body {
   id request = body[@"id"];
   try {
     json args = objJSON(body[@"args"] ?: @{});
@@ -833,123 +843,6 @@ static int cli(int argc, char **argv) {
   } catch (const std::exception &e) {
     [self reply:request result:nullptr error:e.what()];
   }
-}
-- (void)webView:(WKWebView *)view startURLSchemeTask:(id<WKURLSchemeTask>)task {
-  (void)view;
-  NSURL *url = task.request.URL;
-  NSData *data = nil;
-  NSString *mime = @"application/octet-stream";
-  try {
-    if ([url.host isEqualToString:@"frame"]) {
-      std::string value = str(url.lastPathComponent);
-      if (value.empty() ||
-          value.find_first_not_of("0123456789") != std::string::npos)
-        throw std::runtime_error("Invalid image ID");
-      auto path = archive->image(std::stoll(value));
-      data = [NSData dataWithContentsOfFile:ns(path.string())];
-      mime = @"image/jpeg";
-    } else if ([url.host isEqualToString:@"app"]) {
-      NSString *file = url.lastPathComponent;
-      NSSet *allowed =
-          [NSSet setWithArray:@[ @"index.html", @"style.css", @"app.js" ]];
-      if (![allowed containsObject:file])
-        throw std::runtime_error("Unknown resource");
-      NSString *path = [NSBundle.mainBundle.resourcePath
-          stringByAppendingPathComponent:[@"web/"
-                                             stringByAppendingString:file]];
-      data = [NSData dataWithContentsOfFile:path];
-      mime = [file hasSuffix:@"html"]
-                 ? @"text/html"
-                 : ([file hasSuffix:@"css"] ? @"text/css"
-                                            : @"application/javascript");
-    }
-    if (!data)
-      throw std::runtime_error("Resource unavailable");
-    NSURLResponse *res = [[NSURLResponse alloc] initWithURL:url
-                                                   MIMEType:mime
-                                      expectedContentLength:data.length
-                                           textEncodingName:@"utf-8"];
-    [task didReceiveResponse:res];
-    [task didReceiveData:data];
-    [task didFinish];
-  } catch (const std::exception &e) {
-    [task didFailWithError:[NSError
-                               errorWithDomain:@"Litt"
-                                          code:404
-                                      userInfo:@{
-                                        NSLocalizedDescriptionKey : ns(e.what())
-                                      }]];
-  }
-}
-- (void)webView:(WKWebView *)view stopURLSchemeTask:(id<WKURLSchemeTask>)task {
-  (void)view;
-  (void)task;
-}
-- (void)webView:(WKWebView *)view
-    decidePolicyForNavigationAction:(WKNavigationAction *)action
-                    decisionHandler:
-                        (void (^)(WKNavigationActionPolicy))handler {
-  (void)view;
-  handler([action.request.URL.scheme isEqualToString:@"litt"] &&
-                  [action.request.URL.host isEqualToString:@"app"]
-              ? WKNavigationActionPolicyAllow
-              : WKNavigationActionPolicyCancel);
-}
-- (void)webView:(WKWebView *)view
-    didFinishNavigation:(WKNavigation *)navigation {
-  (void)navigation;
-  if (smokeOutput.empty())
-    return;
-  dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC),
-      dispatch_get_main_queue(), ^{
-        [view
-            evaluateJavaScript:@"window.runSmokeTest(); null"
-             completionHandler:^(id result, NSError *error) {
-               (void)result;
-               if (error) {
-                 std::cerr << str(error.localizedDescription) << '\n';
-                 exit(2);
-               }
-               dispatch_after(
-                   dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC),
-                   dispatch_get_main_queue(), ^{
-                     [view
-                         evaluateJavaScript:
-                             @"JSON.stringify(window.smokeResult)"
-                          completionHandler:^(id result, NSError *error) {
-                            std::ofstream out(smokeOutput + ".json");
-                            out << str(result);
-                            out.close();
-                            BOOL passed =
-                                !error &&
-                                [result containsString:@"\"passed\":true"];
-                            [view
-                                takeSnapshotWithConfiguration:nil
-                                            completionHandler:^(
-                                                NSImage *image,
-                                                NSError *snapError) {
-                                              if (image) {
-                                                NSBitmapImageRep *rep = [NSBitmapImageRep
-                                                    imageRepWithData:
-                                                        image
-                                                            .TIFFRepresentation];
-                                                [[rep
-                                                    representationUsingType:
-                                                        NSBitmapImageFileTypePNG
-                                                                 properties:@{}]
-                                                    writeToFile:ns(smokeOutput +
-                                                                   ".png")
-                                                     atomically:YES];
-                                              }
-                                              std::cout << str(result) << '\n';
-                                              exit(passed && !snapError ? 0
-                                                                        : 3);
-                                            }];
-                          }];
-                   });
-             }];
-      });
 }
 @end
 int main(int argc, char **argv) {

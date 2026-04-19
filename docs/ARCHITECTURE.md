@@ -16,10 +16,10 @@ Main-thread generation / recording / exclusion check
 C++ Store ── SQLite WAL + FTS5 ── frames/<id>.jpg
     │                                │
     ├── native JSON CLI              │
-    └── WKWebView message bridge ── custom scheme image responses
+    └── AppKit view controller ── NSImage canvas + native controls
 ```
 
-The native executable has two entry modes: AppKit when launched without arguments and CLI for archive operations. Neither starts an HTTP server. HTML, CSS and JS are bundled resources; navigation is restricted to the local app origin, and arbitrary page scripts cannot access the bridge. OCR text is rendered as text nodes, never interpreted as HTML.
+The executable has two entry modes: native AppKit when launched without arguments and CLI for archive operations. `NativeUI.mm` owns system search/date controls, the image canvas, timeline, filmstrip, settings sheets and evidence popover. It invokes the application controller through in-process Objective-C++ callbacks. The controller reuses the C++ archive and capture engine. There is no WebKit dependency, HTML/CSS/JavaScript UI, web bridge or HTTP server. OCR text is displayed as plain text in an NSTextView.
 
 `Store` owns a SQLite connection with prepared statements and an in-process recursive mutex. Other processes use separate WAL connections. FTS5 external-content triggers track insertions and deletions. Image files have generated numeric IDs rather than input filenames. Imports decode through ImageIO, extract OCR through Vision, then use the same archive path as capture.
 
@@ -27,7 +27,7 @@ A capture generation token invalidates pending work after pause or settings chan
 
 Retirement of frames runs on launch, hourly, and after saving preferences. Deletes remove the FTS entry and image. File deletion failure is reported; this is not a forensic secure-erasure guarantee. The DB and image filesystem are separate: abrupt power failure can leave an orphan file or a missing image. There is no cloud backup or remote synchronization.
 
-The timeline summarizes the loaded page of saved observations. It groups adjacent same-app samples only when less than 60 seconds apart. Those bands are not measured attention or interaction time. Search uses literal AND terms and chronological ordering; OCR boxes provide screenshot-linked matches.
+The timeline summarizes the loaded page of saved observations. Bands extend to the next saved sample, capped at 30 seconds so longer gaps remain visible. Those bands are not measured attention or interaction time. Search uses literal AND terms and chronological ordering; OCR boxes provide screenshot-linked matches.
 
 ## Boundaries
 

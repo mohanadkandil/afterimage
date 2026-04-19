@@ -1,6 +1,6 @@
 # Litt
 
-A local screen-memory app for macOS, with a C++20 archive engine and a CLI for agents. Find something you saw, open the screenshot, and browse the moments around it.
+A native AppKit screen-memory app for macOS, with a C++20 archive engine and a CLI for agents. Find something you saw, open the screenshot, and browse the moments around it.
 
 Litt samples the selected display (the main display by default), reads visible text with Apple's on-device Vision framework, and stores searchable screenshots on your Mac. Recording is off on launch. There are no accounts, network services, API keys, or bundled activity records.
 
@@ -31,7 +31,7 @@ The app is locally ad-hoc signed. A Developer ID signature and notarization are 
 
 - Search visible text or window titles. Search terms are literal words combined with AND, not a query language. Results are chronological, not AI-generated answers.
 - Choose a date and application. **Earlier / Newer** page through the entire matching archive in batches of 200.
-- Select a result to see the screenshot and highlighted OCR boxes. Open **Text & evidence** for the recognized text, source, dimensions and timestamp.
+- Select a result to see the screenshot and highlighted OCR boxes. Open **Details** for the recognized text, source, dimensions and timestamp.
 - Scrub the application timeline or use the arrow keys. Space plays saved moments at a fixed step rate; it is **not a continuous video or real-time reenactment**. Gaps remain visible.
 - Zoom, export an image, or delete an individual moment.
 - Import PNG/JPEG screenshots to test the pipeline without recording. Imports are explicitly labeled and dated at import time. The CLI can set a supplied capture timestamp.
@@ -86,9 +86,9 @@ The agent usage guide is [docs/AGENT-SKILL.md](docs/AGENT-SKILL.md).
 | Change selection | C++ grayscale comparison and timestamp/context checkpoints |
 | Capture | ScreenCaptureKit through Objective-C++ |
 | Text extraction | Apple Vision; normalized OCR rectangles retained |
-| Desktop shell | AppKit + WKWebView; packaged local HTML/CSS/JS |
-| App/engine bridge | Local WebKit messages; no HTTP server |
-| Screenshot delivery | Restricted custom URL-scheme handler |
+| Desktop shell | AppKit controls, scroll views, sheets and popovers in Objective-C++ |
+| App/engine bridge | In-process Objective-C++ callbacks; no HTTP server |
+| Screenshot delivery | Native NSImage rendering from the local archive |
 | CLI | Same native executable and C++ engine |
 
 Clang, SQLite, Vision and ScreenCaptureKit supply foundational capabilities; this project implements their integration, archive behavior, change gate, query workflow and UI. It does not claim a new OCR model or search algorithm.
@@ -100,9 +100,12 @@ See [architecture and decisions](docs/ARCHITECTURE.md) and [validation](docs/VAL
 ```sh
 ./scripts/build.sh                 # C++ tests + native OCR/CLI integration
 ./scripts/package.sh               # dist/Litt-macOS.zip
+python3 tests/native_ui.py          # AppKit checks; logged-in Mac required
 ```
 
 The C++ core can also be built and tested on Linux. Native capture, OCR and the app require macOS. CI definitions are included; a workflow file is not evidence that hosted CI has run.
+
+Keyboard shortcuts: **⌘F** or **/** focuses search; **← / →** browses moments; **Space** toggles playback; **⌘,** opens Settings. The app follows the system light/dark appearance.
 
 The generated document in `tests/fixture.png` is explicitly labeled test content and is never inserted into the user's archive automatically. To exercise the native UI with an isolated archive:
 
@@ -110,11 +113,11 @@ The generated document in `tests/fixture.png` is explicitly labeled test content
 export LITT_HOME="$(mktemp -d)"
 ./litt import tests/fixture.png
 ./build/Litt.app/Contents/MacOS/Litt --ui-smoke /tmp/litt-ui
-# JSON check results and a native WKWebView screenshot:
+# JSON check results and a native AppKit screenshot:
 # /tmp/litt-ui.json and /tmp/litt-ui.png
 ```
 
-`--ui-smoke` opens a test window, exercises its actual native bridge, writes results, then exits. It never starts recording. [scripts/draw-assets.swift](scripts/draw-assets.swift) regenerates the icon and OCR fixture.
+`--ui-smoke` opens a test window, exercises actual AppKit controls and C++ archive operations, writes results, then exits. It never starts recording. [scripts/draw-assets.swift](scripts/draw-assets.swift) regenerates the icon and OCR fixture.
 
 ## License
 

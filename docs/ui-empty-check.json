@@ -1,1 +1,1 @@
-{"passed":true,"checks":{"nativeBridge":true,"layout":true,"fullWidthViewer":true,"noSidebar":true,"horizontalMoments":true,"controlsVisible":true,"toolbarFits":true,"empty":true,"captureOff":true},"count":0}
+{"checks":{"canvasFits":true,"controlsVisible":true,"empty":true,"nativeAppKit":true,"settings":true},"passed":true}
