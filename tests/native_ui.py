@@ -1,4 +1,4 @@
-"""Run native AppKit checks in disposable archives (requires a logged-in Mac)."""
+"""Run native SwiftUI checks in disposable archives (requires a logged-in Mac)."""
 import json
 import os
 from pathlib import Path

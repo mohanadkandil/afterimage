@@ -1,1 +1,1 @@
-{"checks":{"appFilter":true,"appNames":true,"canvasFits":true,"controlsVisible":true,"dateFilter":true,"evidence":true,"imageLoaded":true,"nativeAppKit":true,"navigation":true,"ocrHighlights":true,"scrub":true,"search":true,"searchMiss":true,"settings":true,"zoom":true},"passed":true}
+{"checks":{"appFilter":true,"dateFilter":true,"imageLoaded":true,"nativeWindow":true,"navigation":true,"ocrHighlights":true,"realAppIcon":true,"scrub":true,"search":true,"searchMiss":true,"settings":true,"swiftUIHost":true,"unknownIconFallback":true,"zoom":true},"passed":true}

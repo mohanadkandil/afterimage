@@ -4,14 +4,15 @@ Tested on this Mac: Apple Silicon, macOS 26.6, Apple Clang 17, CMake 4.4.3, syst
 
 ## Passed
 
-- Release C++20 / Objective-C++ build with AppKit; WebKit and web UI resources removed.
+- Release C++20 / Objective-C++ engine with a Swift 6 SwiftUI library; WebKit and web UI resources removed.
 - C++ archive suite: persistence, FTS escaping, filters, retention, concurrent access and change detection.
 - Native CLI integration: real Vision OCR, exact-token retrieval, JPEG export, malformed imports and deletion.
-- Native AppKit smoke checks using isolated archives: image rendering, OCR search/highlights, search misses, app names/filtering, date filtering, previous/next navigation, scrubbing, zoom, evidence and settings sheet.
+- App-icon resolution verified against installed Finder and an unavailable bundle ID; neutral fallback verified.
+- Native SwiftUI smoke checks using isolated archives: image rendering, OCR search/highlights, search misses, app names/filtering, date filtering, previous/next navigation, scrubbing, zoom, evidence and settings sheet.
 - Empty/populated layouts inspected at regular and compact window sizes. Light and dark appearances inspected using native view snapshots.
 - Core and native OCR/CLI suites pass. Their sub-second runtime is not a capture/search performance benchmark.
 
-Results: [populated](ui-populated-check.json), [empty](ui-empty-check.json), [compact populated](ui-compact-populated-check.json), [compact empty](ui-compact-empty-check.json). Screenshots show the actual AppKit app with a labeled test fixture, never fabricated user activity. The UI smoke entry point exercises programmatic AppKit actions; it does not establish full manual mouse/keyboard coverage or a measured animation frame rate.
+Results: [populated](ui-populated-check.json), [empty](ui-empty-check.json), [compact populated](ui-compact-populated-check.json), [compact empty](ui-compact-empty-check.json). Screenshots show the actual SwiftUI app with a labeled test fixture, never fabricated user activity. The UI smoke entry point exercises the SwiftUI view model through its native bridge; it does not establish full manual mouse/keyboard coverage or a measured animation frame rate.
 
 ## Remaining UI validation
 

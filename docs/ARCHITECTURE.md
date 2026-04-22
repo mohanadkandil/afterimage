@@ -1,7 +1,7 @@
 # Architecture
 
 ```text
-AppKit controls / menu bar
+SwiftUI interface / native menu bar
           │
           ▼
 ScreenCaptureKit candidate screenshot (configured interval)
@@ -16,10 +16,12 @@ Main-thread generation / recording / exclusion check
 C++ Store ── SQLite WAL + FTS5 ── frames/<id>.jpg
     │                                │
     ├── native JSON CLI              │
-    └── AppKit view controller ── NSImage canvas + native controls
+    └── SwiftUI model ── image canvas, app icons and timeline
 ```
 
-The executable has two entry modes: native AppKit when launched without arguments and CLI for archive operations. `NativeUI.mm` owns system search/date controls, the image canvas, timeline, filmstrip, settings sheets and evidence popover. It invokes the application controller through in-process Objective-C++ callbacks. The controller reuses the C++ archive and capture engine. There is no WebKit dependency, HTML/CSS/JavaScript UI, web bridge or HTTP server. OCR text is displayed as plain text in an NSTextView.
+The executable has two entry modes: SwiftUI hosted in a native macOS window and CLI for archive operations. Swift 6 views live under `native/SwiftUI/`, one type per file. `MemoryModel` uses main-actor Observation state and async requests through `NativeUI.mm`, a small Objective-C++ adapter to the existing controller. The C++ archive, capture change gate, Vision OCR and CLI are retained. AppKit remains only where macOS integration needs it: window/menu lifecycle, file dialogs, app-icon lookup and hosting SwiftUI. There is no web UI or WebKit dependency.
+
+The SwiftUI library is bundled in `Contents/Frameworks` and loaded relative to the executable. App icons are resolved locally by bundle ID and cached; missing applications use a neutral symbol rather than an invented logo. The icon represents the installed app version, not a historical icon embedded in the recording.
 
 `Store` owns a SQLite connection with prepared statements and an in-process recursive mutex. Other processes use separate WAL connections. FTS5 external-content triggers track insertions and deletions. Image files have generated numeric IDs rather than input filenames. Imports decode through ImageIO, extract OCR through Vision, then use the same archive path as capture.
 

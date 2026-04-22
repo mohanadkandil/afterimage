@@ -1,1 +1,1 @@
-{"checks":{"canvasFits":true,"controlsVisible":true,"empty":true,"nativeAppKit":true,"settings":true},"passed":true}
+{"checks":{"empty":true,"nativeWindow":true,"settings":true,"swiftUIHost":true},"passed":true}

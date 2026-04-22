@@ -4,7 +4,7 @@
 using litt::json;
 typedef void (^UICompletion)(json, std::string);
 typedef void (^UIRequest)(NSString *, json, UICompletion);
-@interface NativeUI : NSViewController <NSSearchFieldDelegate>
+@interface NativeUI : NSViewController
 - (instancetype)initWithRequest:(UIRequest)request imageRoot:(NSString *)root;
 - (void)refresh;
 - (void)showSettings:(id)sender;
