@@ -3,7 +3,7 @@ import SwiftUI
 struct PlaybackControls: View {
   @Bindable var model: MemoryModel
   var body: some View {
-    HStack(spacing: 10) {
+    HStack(spacing: 6) {
       IconButton(
         symbol: model.playing ? "pause.fill" : "play.fill", title: "Play or pause saved moments"
       ) { model.togglePlayback() }.disabled(model.moments.isEmpty)
@@ -12,7 +12,7 @@ struct PlaybackControls: View {
       IconButton(symbol: "chevron.right", title: "Next moment") { model.move(1) }.disabled(
         model.index >= model.moments.count - 1)
       if let current = model.current {
-        Text(current.date, format: .dateTime.day().month(.abbreviated).hour().minute().second())
+        Text(current.date, format: .dateTime.hour().minute().second())
           .font(.system(size: 11)).monospacedDigit().foregroundStyle(.secondary)
       }
       Spacer(minLength: 0)

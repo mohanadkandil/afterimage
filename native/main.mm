@@ -278,10 +278,13 @@ static int cli(int argc, char **argv) {
       initWithContentRect:NSMakeRect(0, 0, 1380, 900)
                 styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                           NSWindowStyleMaskMiniaturizable |
-                          NSWindowStyleMaskResizable
+                          NSWindowStyleMaskResizable | NSWindowStyleMaskFullSizeContentView
                   backing:NSBackingStoreBuffered
                     defer:NO];
   window.title = @"Litt";
+  window.titleVisibility = NSWindowTitleHidden;
+  window.titlebarAppearsTransparent = YES;
+  window.movableByWindowBackground = YES;
   window.minSize = NSMakeSize(840, 600);
   window.delegate = self;
   __weak App *weakSelf = self;

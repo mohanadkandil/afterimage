@@ -31,6 +31,7 @@ The app is locally ad-hoc signed. A Developer ID signature and notarization are 
 
 - Search visible text or window titles. Search terms are literal words combined with AND, not a query language. Results are chronological, not AI-generated answers.
 - Choose a date and application. **Earlier / Newer** page through the entire matching archive in batches of 200.
+- The window uses one integrated header and an edge-to-edge canvas. Use the stack button to reveal thumbnails; the calendar and import/export menu sit beside playback controls.
 - App icons appear on the selected frame, thumbnails, timeline markers and app exclusions. Icons come from installed applications matched by bundle ID; imports and unavailable apps use neutral symbols.
 - Select a result to see the screenshot and highlighted OCR boxes. Open **Details** for the recognized text, source, dimensions and timestamp.
 - Scrub the application timeline or use the arrow keys. Space plays saved moments at a fixed step rate; it is **not a continuous video or real-time reenactment**. Gaps remain visible.

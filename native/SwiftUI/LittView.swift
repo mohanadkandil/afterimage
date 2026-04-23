@@ -5,66 +5,61 @@ import SwiftUI
 struct LittView: View {
   @Bindable var model: MemoryModel
   @FocusState private var searchFocused: Bool
+  @State private var showFilmstrip = false
   @Environment(\.colorScheme) private var colorScheme
   var body: some View {
     VStack(spacing: 0) {
-      HeaderView(model: model, searchFocused: $searchFocused).padding(.horizontal, 22).padding(
-        .top, 12
-      ).padding(.bottom, 14)
+      HeaderView(model: model, searchFocused: $searchFocused)
+        .padding(.leading, 84).padding(.trailing, 18).frame(height: 52)
+      ScreenshotView(model: model)
+      if showFilmstrip && model.current != nil {
+        FilmstripView(model: model).padding(.top, 10)
+      }
       HStack(spacing: 8) {
         Button {
           model.showDate.toggle()
         } label: {
-          HStack(spacing: 8) {
+          HStack(spacing: 6) {
             Image(systemName: "calendar")
-            Text(model.day, format: .dateTime.day().month(.abbreviated).year())
+            Text(model.day, format: .dateTime.day().month(.abbreviated))
             Image(systemName: "chevron.down").font(.system(size: 8, weight: .semibold))
           }
         }.buttonStyle(QuietButton()).popover(isPresented: $model.showDate) {
-          DatePicker("Recording date", selection: $model.day, displayedComponents: .date)
-            .datePickerStyle(.graphical).labelsHidden().padding(16).frame(width: 290)
+          VStack {
+            DatePicker("Recording date", selection: $model.day, displayedComponents: .date)
+              .datePickerStyle(.graphical).labelsHidden()
+            Button("Today") {
+              model.day = Date()
+              model.showDate = false
+            }
+            .buttonStyle(QuietButton())
+          }.padding(16).frame(width: 290)
         }
-        if !Calendar.current.isDateInToday(model.day) {
-          Button("Today") { model.day = Date() }.buttonStyle(QuietButton()).foregroundStyle(
-            .secondary)
-        }
-        Spacer()
-        Menu {
-          Button("All applications") { model.app = "" }
-          ForEach(model.state.apps) { app in Button(app.name) { model.app = app.bundle } }
-        } label: {
-          HStack(spacing: 6) {
-            Text(model.state.apps.first(where: { $0.bundle == model.app })?.name ?? "All apps")
-            Image(systemName: "chevron.down").font(.system(size: 8, weight: .semibold))
-          }.font(.system(size: 12)).foregroundStyle(.secondary)
-        }.menuStyle(.borderlessButton).menuIndicator(.hidden).tint(.primary).fixedSize()
-        IconButton(symbol: "square.and.arrow.down", title: "Import screenshots") {
-          Task { await model.importImages() }
-        }.disabled(model.importing)
+        PlaybackControls(model: model)
+        IconButton(
+          symbol: "rectangle.stack", title: showFilmstrip ? "Hide thumbnails" : "Show thumbnails"
+        ) {
+          showFilmstrip.toggle()
+        }.disabled(model.current == nil)
         IconButton(symbol: "text.alignleft", title: "Text and details") {
           model.showDetails.toggle()
         }.disabled(model.current == nil)
           .popover(isPresented: $model.showDetails) { EvidenceView(model: model) }
-        IconButton(symbol: "square.and.arrow.up", title: "Export screenshot") {
-          Task { await model.exportImage() }
-        }.disabled(model.current == nil)
-      }.padding(.horizontal, 18).padding(.bottom, 10)
-      ScreenshotView(model: model).padding(.horizontal, 20)
-      if let current = model.current {
-        HStack {
-          Text(current.title.isEmpty ? current.app : current.title).lineLimit(1)
-          Spacer()
-          Text("\(current.width) × \(current.height)").monospacedDigit()
-        }
-        .font(.system(size: 10)).foregroundStyle(.tertiary).padding(.horizontal, 24).padding(
-          .vertical, 9)
-        FilmstripView(model: model)
-      }
-      PlaybackControls(model: model).padding(.horizontal, 22).padding(.top, 10).padding(.bottom, 8)
+        Menu {
+          Button("Import screenshots…") { Task { await model.importImages() } }
+            .disabled(model.importing)
+          Button("Export screenshot…") { Task { await model.exportImage() } }
+            .disabled(model.current == nil)
+        } label: {
+          Image(systemName: "ellipsis").frame(width: 24, height: 30)
+        }.menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+          .help("Import and export").accessibilityLabel("Import and export")
+      }.padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 4)
       if !model.moments.isEmpty {
-        TimelineView(model: model).frame(height: 44).padding(.horizontal, 26).padding(.bottom, 12)
+        TimelineView(model: model).frame(height: 44).padding(.horizontal, 22).padding(.bottom, 8)
       }
     }
+    .ignoresSafeArea(.container, edges: .top)
     .background(
       colorScheme == .dark
         ? Color(red: 0.075, green: 0.087, blue: 0.09) : Color(red: 0.97, green: 0.974, blue: 0.97)

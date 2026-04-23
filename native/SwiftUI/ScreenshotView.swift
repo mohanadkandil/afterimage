@@ -66,7 +66,7 @@ struct ScreenshotView: View {
             }
           }
         }
-      }.clipShape(RoundedRectangle(cornerRadius: 12))
+      }.clipped()
     }.frame(minHeight: 140)
   }
 }
