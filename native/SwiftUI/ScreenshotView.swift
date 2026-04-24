@@ -41,9 +41,8 @@ struct ScreenshotView: View {
                       : current.date.formatted(date: .omitted, time: .standard)
                   ).font(.system(size: 9)).foregroundStyle(.secondary)
                 }
-              }.padding(.horizontal, 10).padding(.vertical, 8).background(
-                .regularMaterial, in: RoundedRectangle(cornerRadius: 9)
-              ).help("Source application: \(current.app)")
+              }.padding(.horizontal, 10).padding(.vertical, 8).modifier(GlassSurface()).help(
+                "Source application: \(current.app)")
               Spacer()
             }
             Spacer()

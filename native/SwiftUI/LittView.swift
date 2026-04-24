@@ -5,6 +5,7 @@ import SwiftUI
 struct LittView: View {
   @Bindable var model: MemoryModel
   @FocusState private var searchFocused: Bool
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var showFilmstrip = false
   @Environment(\.colorScheme) private var colorScheme
   var body: some View {
@@ -14,6 +15,7 @@ struct LittView: View {
       ScreenshotView(model: model)
       if showFilmstrip && model.current != nil {
         FilmstripView(model: model).padding(.top, 10)
+          .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
       }
       HStack(spacing: 8) {
         Button {
@@ -39,7 +41,9 @@ struct LittView: View {
         IconButton(
           symbol: "rectangle.stack", title: showFilmstrip ? "Hide thumbnails" : "Show thumbnails"
         ) {
-          showFilmstrip.toggle()
+          withAnimation(reduceMotion ? nil : .spring(duration: 0.28, bounce: 0.08)) {
+            showFilmstrip.toggle()
+          }
         }.disabled(model.current == nil)
         IconButton(symbol: "text.alignleft", title: "Text and details") {
           model.showDetails.toggle()

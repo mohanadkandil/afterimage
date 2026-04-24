@@ -41,7 +41,7 @@ struct HeaderView: View {
           model.state.recording ? "Pause" : "Record",
           systemImage: model.state.recording ? "pause.fill" : "record.circle"
         ).font(.system(size: 12, weight: .medium)).padding(.horizontal, 12).frame(height: 32)
-          .background(Style.mint.opacity(0.13), in: RoundedRectangle(cornerRadius: 8))
+          .modifier(GlassSurface(interactive: true, accented: true))
       }.buttonStyle(.plain)
       IconButton(symbol: "slider.horizontal.3", title: "Settings") { model.showSettings = true }
     }
