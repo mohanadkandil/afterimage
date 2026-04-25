@@ -69,7 +69,18 @@ struct LittView: View {
         ? Color(red: 0.075, green: 0.087, blue: 0.09) : Color(red: 0.97, green: 0.974, blue: 0.97)
     )
     .tint(Style.mint)
-    .sheet(isPresented: $model.showSettings) {
+    .sheet(isPresented: $model.showOnboarding) {
+      OnboardingView(model: model).interactiveDismissDisabled()
+    }
+    .sheet(
+      isPresented: $model.showSettings,
+      onDismiss: {
+        if model.replayIntroduction {
+          model.replayIntroduction = false
+          model.showOnboarding = true
+        }
+      }
+    ) {
       SettingsView(model: model, prefs: model.state.settings)
     }
     .alert(

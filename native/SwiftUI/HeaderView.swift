@@ -43,7 +43,7 @@ struct HeaderView: View {
         ).font(.system(size: 12, weight: .medium)).padding(.horizontal, 12).frame(height: 32)
           .modifier(GlassSurface(interactive: true, accented: true))
       }.buttonStyle(.plain)
-      IconButton(symbol: "slider.horizontal.3", title: "Settings") { model.showSettings = true }
+      IconButton(symbol: "gearshape", title: "Settings") { model.showSettings = true }
     }
 
   }

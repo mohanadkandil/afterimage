@@ -14,6 +14,8 @@ import SwiftUI
   var offset = 0
   var zoom: CGFloat = 1
   var showSettings = false
+  var showOnboarding = false
+  var replayIntroduction = false
   var showDetails = false
   var showDate = false
   var error: String?
@@ -36,6 +38,15 @@ import SwiftUI
     self.bridge = bridge
     self.root = URL(fileURLWithPath: root)
     images.countLimit = 16
+    showOnboarding = !FileManager.default.fileExists(
+      atPath: self.root.appendingPathComponent(".onboarding-complete").path)
+  }
+  func finishOnboarding() {
+    do {
+      try Data("1".utf8).write(
+        to: root.appendingPathComponent(".onboarding-complete"), options: .atomic)
+      showOnboarding = false
+    } catch { self.error = error.localizedDescription }
   }
   func call(_ action: String, _ args: [String: Any] = [:]) async throws -> Data {
     guard let bridge else {

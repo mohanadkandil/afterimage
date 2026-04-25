@@ -124,3 +124,5 @@ export LITT_HOME="$(mktemp -d)"
 ## License
 
 MIT. The vendored nlohmann/json header retains its own MIT license. See [THIRD_PARTY.md](THIRD_PARTY.md).
+
+First launch includes a short introduction. Screen Recording permission is optional, and finishing setup never starts capture. Open the gear for Capture, Privacy, and Storage settings; Capture also lets you replay the introduction.

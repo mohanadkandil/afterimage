@@ -829,6 +829,9 @@ static int cli(int argc, char **argv) {
              }
            }
             error:""];
+    } else if (action == "requestPermission") {
+      CGRequestScreenCaptureAccess();
+      [self reply:request result:json{{"ok", true}} error:""];
     } else if (action == "permission") {
       [NSWorkspace.sharedWorkspace
           openURL:[NSURL URLWithString:

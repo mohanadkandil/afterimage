@@ -50,9 +50,24 @@ import SwiftUI
   @objc public func showSettings(_ sender: Any?) { model.showSettings = true }
   @objc public func smoke(_ output: String) {
     Task {
+      try? await Task.sleep(for: .milliseconds(450))
+      if let introView = view.window?.sheets.first?.contentView,
+        let rep = introView.bitmapImageRepForCachingDisplay(in: introView.bounds)
+      {
+        introView.cacheDisplay(in: introView.bounds, to: rep)
+        try? rep.representation(using: .png, properties: [:])?.write(
+          to: URL(fileURLWithPath: output + "-onboarding.png"))
+      }
+      let introductionWasShown = model.showOnboarding
+      model.finishOnboarding()
+      try? await Task.sleep(for: .milliseconds(350))
       await model.refresh()
       await model.load()
       var checks: [String: Bool] = [
+        "onboardingCompletion": !model.showOnboarding
+          && FileManager.default.fileExists(
+            atPath: model.root.appendingPathComponent(".onboarding-complete").path),
+        "firstLaunchIntroduction": introductionWasShown,
         "swiftUIHost": view is NSHostingView<LittView>, "nativeWindow": view.window != nil,
       ]
       if !model.moments.isEmpty {
@@ -91,6 +106,10 @@ import SwiftUI
         checks["unknownIconFallback"] = model.appIcon("not.an.installed.app.9345") == nil
       } else {
         checks["empty"] = model.current == nil
+      }
+      if let bridge = model.bridge {
+        let reopened = MemoryModel(bridge: bridge, root: model.root.path)
+        checks["onboardingPersists"] = !reopened.showOnboarding
       }
       model.showSettings = true
       try? await Task.sleep(for: .milliseconds(400))
