@@ -38,3 +38,5 @@ To finish the live check:
 No hosted CI run, notarization, external distribution, or push to GitHub was performed.
 
 Glass and motion refinement: the local Swift 6.1/macOS 15.5 SDK build uses native regularMaterial with a subtle highlight. The Swift 6.2+/macOS 26 glassEffect branch is not compiled or verified by this toolchain. Thumbnail transitions and press/hover feedback respect Reduce Motion; surfaces become opaque with Reduce Transparency. Core, OCR CLI, and populated/empty SwiftUI smoke checks passed; animation timing has not been instrumented.
+
+Setup now occupies the root window rather than a sheet over the main interface. The completion guard requires both permission and recording state; native smoke verifies the negative path before opening the main view only inside the test. Real permission grant/start remains manual. Timeline app colors are derived from bundle IDs; horizontal scrolling uses SwiftUI ScrollView with a conventional mouse-wheel adapter. Physical input behavior has not been verified by the model-driven smoke.

@@ -16,6 +16,7 @@ import SwiftUI
   var showSettings = false
   var showOnboarding = false
   var replayIntroduction = false
+  var startingCapture = false
   var showDetails = false
   var showDate = false
   var error: String?
@@ -39,12 +40,22 @@ import SwiftUI
     self.root = URL(fileURLWithPath: root)
     images.countLimit = 16
     showOnboarding = !FileManager.default.fileExists(
-      atPath: self.root.appendingPathComponent(".onboarding-complete").path)
+      atPath: self.root.appendingPathComponent(".onboarding-v2-complete").path)
+  }
+  func startFromOnboarding() async {
+    guard !startingCapture else { return }
+    startingCapture = true
+    defer { startingCapture = false }
+    await refresh()
+    guard state.permission else { return }
+    if !state.recording { await toggleRecording() }
+    finishOnboarding()
   }
   func finishOnboarding() {
+    guard state.permission && state.recording else { return }
     do {
       try Data("1".utf8).write(
-        to: root.appendingPathComponent(".onboarding-complete"), options: .atomic)
+        to: root.appendingPathComponent(".onboarding-v2-complete"), options: .atomic)
       showOnboarding = false
     } catch { self.error = error.localizedDescription }
   }

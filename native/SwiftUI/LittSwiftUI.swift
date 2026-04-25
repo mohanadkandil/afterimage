@@ -10,12 +10,19 @@ import SwiftUI
     super.init(nibName: nil, bundle: nil)
   }
   required init?(coder: NSCoder) { fatalError("init(coder:) is unavailable") }
-  public override func loadView() { view = NSHostingView(rootView: LittView(model: model)) }
+  public override func loadView() {
+    view = NSHostingView(
+      rootView: LittRootView(
+        model: model, setupChanged: { [weak self] setup in self?.configureWindow(setup) }))
+  }
   public override func viewDidAppear() {
     super.viewDidAppear()
+    configureWindow(model.showOnboarding)
     guard monitor == nil else { return }
     monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-      guard let self, event.window == self.view.window, !self.model.showSettings else {
+      guard let self, event.window == self.view.window, !self.model.showSettings,
+        !self.model.showOnboarding
+      else {
         return event
       }
       if event.modifierFlags.contains(.command), event.charactersIgnoringModifiers == "f" {
@@ -46,12 +53,29 @@ import SwiftUI
       }
     }
   }
+  private var browsingSize = NSSize(width: 1380, height: 900)
+  private func configureWindow(_ setup: Bool) {
+    guard let window = view.window else { return }
+    if setup {
+      if window.contentLayoutRect.width > 700 { browsingSize = window.contentLayoutRect.size }
+      window.minSize = NSSize(width: 580, height: 570)
+      window.styleMask.remove(.resizable)
+      window.setContentSize(NSSize(width: 580, height: 570))
+    } else {
+      window.styleMask.insert(.resizable)
+      window.minSize = NSSize(width: 840, height: 600)
+      window.setContentSize(browsingSize)
+    }
+    window.center()
+  }
   @objc public func refresh() { Task { await model.refresh() } }
-  @objc public func showSettings(_ sender: Any?) { model.showSettings = true }
+  @objc public func showSettings(_ sender: Any?) {
+    if !model.showOnboarding { model.showSettings = true }
+  }
   @objc public func smoke(_ output: String) {
     Task {
       try? await Task.sleep(for: .milliseconds(450))
-      if let introView = view.window?.sheets.first?.contentView,
+      if let introView = Optional(view),
         let rep = introView.bitmapImageRepForCachingDisplay(in: introView.bounds)
       {
         introView.cacheDisplay(in: introView.bounds, to: rep)
@@ -60,15 +84,16 @@ import SwiftUI
       }
       let introductionWasShown = model.showOnboarding
       model.finishOnboarding()
+      let setupWasGated = model.showOnboarding
+      model.showOnboarding = false
       try? await Task.sleep(for: .milliseconds(350))
       await model.refresh()
       await model.load()
       var checks: [String: Bool] = [
-        "onboardingCompletion": !model.showOnboarding
-          && FileManager.default.fileExists(
-            atPath: model.root.appendingPathComponent(".onboarding-complete").path),
+        "permissionGatesCompletion": setupWasGated,
         "firstLaunchIntroduction": introductionWasShown,
-        "swiftUIHost": view is NSHostingView<LittView>, "nativeWindow": view.window != nil,
+        "swiftUIHost": view is NSHostingView<LittRootView>,
+        "nativeWindow": view.window != nil,
       ]
       if !model.moments.isEmpty {
         checks["imageLoaded"] = model.current.flatMap { model.image($0) } != nil
@@ -106,10 +131,6 @@ import SwiftUI
         checks["unknownIconFallback"] = model.appIcon("not.an.installed.app.9345") == nil
       } else {
         checks["empty"] = model.current == nil
-      }
-      if let bridge = model.bridge {
-        let reopened = MemoryModel(bridge: bridge, root: model.root.path)
-        checks["onboardingPersists"] = !reopened.showOnboarding
       }
       model.showSettings = true
       try? await Task.sleep(for: .milliseconds(400))

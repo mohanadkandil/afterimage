@@ -125,4 +125,4 @@ export LITT_HOME="$(mktemp -d)"
 
 MIT. The vendored nlohmann/json header retains its own MIT license. See [THIRD_PARTY.md](THIRD_PARTY.md).
 
-First launch includes a short introduction. Screen Recording permission is optional, and finishing setup never starts capture. Open the gear for Capture, Privacy, and Storage settings; Capture also lets you replay the introduction.
+First launch shows a standalone setup window. Grant Screen Recording permission, then press Start recording to enter the timeline. The main interface is hidden until setup succeeds. Timeline segments have consistent app colors and scroll horizontally with a trackpad or mouse wheel. Open the gear for Capture, Privacy, and Storage settings; Capture also lets you replay the introduction.

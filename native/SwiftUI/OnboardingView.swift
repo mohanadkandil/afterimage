@@ -4,11 +4,11 @@ struct OnboardingView: View {
   @Bindable var model: MemoryModel
   @State private var step = 0
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  private let titles = ["Find your way back.", "You choose what stays.", "A moment away."]
+  private let titles = ["Find your way back.", "You choose what stays.", "Ready when you are."]
   private let descriptions = [
     "Return to something you saw. Screenshots and searchable text stay on this Mac.",
     "Screen Recording permission lets Litt save your display. Capture stays paused until you press Record.",
-    "Search visible text, pick a date, or scrub through saved moments. Start with a screenshot if you prefer.",
+    "Press Start recording to begin saving moments and open your timeline. You can pause at any time.",
   ]
 
   var body: some View {
@@ -41,7 +41,7 @@ struct OnboardingView: View {
                 await model.action("requestPermission")
                 await model.refresh()
               }
-            }.buttonStyle(QuietButton()).modifier(GlassSurface(interactive: true))
+            }.buttonStyle(SetupButtonStyle(primary: false))
             Button("Open permission settings") { Task { await model.action("permission") } }
               .buttonStyle(.link).font(.caption)
           }
@@ -58,21 +58,18 @@ struct OnboardingView: View {
       Spacer()
       HStack {
         if step > 0 {
-          Button("Back") { advance(-1) }.buttonStyle(QuietButton())
-        } else {
-          Button("Skip introduction") { model.finishOnboarding() }.buttonStyle(QuietButton())
+          Button("Back") { advance(-1) }.buttonStyle(SetupButtonStyle(primary: false))
         }
         Spacer()
-        Button(
-          step == 2
-            ? "Open my timeline"
-            : step == 1 && !model.state.permission ? "Continue without capture" : "Continue"
-        ) {
-          if step == 2 { model.finishOnboarding() } else { advance(1) }
-        }.buttonStyle(QuietButton()).modifier(GlassSurface(interactive: true, accented: true))
+        Button(step == 2 ? (model.startingCapture ? "Starting…" : "Start recording") : "Continue") {
+          if step == 2 { Task { await model.startFromOnboarding() } } else { advance(1) }
+        }.buttonStyle(SetupButtonStyle())
+          .disabled(model.startingCapture || (step > 0 && !model.state.permission))
           .keyboardShortcut(.defaultAction)
+
       }
-    }.padding(32).frame(width: 540, height: 540)
+    }.padding(40).padding(.top, 16).frame(width: 580, height: 570)
+      .ignoresSafeArea(.container, edges: .top)
       .background(Color(nsColor: .windowBackgroundColor))
   }
 
