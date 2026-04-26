@@ -1,0 +1,17 @@
+{
+  "frames": 11,
+  "frames_added_during_sample": 0,
+  "archive_mib": 4.74,
+  "rss_mib_range": [
+    74.0,
+    77.1
+  ],
+  "ps_cpu_percent_range": [
+    0.0,
+    15.4
+  ],
+  "cli_search_ms_median": 8.7,
+  "cli_search_ms_max": 17.4,
+  "search_samples": 20,
+  "limits": "10 second UI sample; ps CPU is a reported average, not isolated capture CPU. CLI latency includes process launch and framework loading. Small local archive; not a sustained capture, large dataset, battery, or GUI-startup benchmark."
+}

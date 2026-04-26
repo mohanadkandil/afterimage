@@ -42,11 +42,16 @@ struct OnboardingView: View {
                 await model.refresh()
               }
             }.buttonStyle(SetupButtonStyle(primary: false))
-            Button("Open permission settings") { Task { await model.action("permission") } }
-              .buttonStyle(.link).font(.caption)
-          }
-          Text("Exclude apps and choose how long history is kept in Settings.")
+            HStack(spacing: 16) {
+              Button("Open settings") { Task { await model.action("permission") } }
+              Button("Check again") { Task { await model.refresh() } }
+            }.buttonStyle(.link).font(.caption)
+            Text(
+              "Already enabled? Turn Litt off and on in System Settings, then quit and reopen it."
+            )
             .font(.caption).foregroundStyle(.secondary)
+          }
+
         }
         if step == 2 {
           HStack(spacing: 18) {
@@ -71,6 +76,11 @@ struct OnboardingView: View {
     }.padding(40).padding(.top, 16).frame(width: 580, height: 570)
       .ignoresSafeArea(.container, edges: .top)
       .background(Color(nsColor: .windowBackgroundColor))
+      .onReceive(
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+      ) { _ in
+        Task { await model.refresh() }
+      }
   }
 
   private func advance(_ delta: Int) {
