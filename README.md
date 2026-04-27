@@ -126,3 +126,7 @@ export LITT_HOME="$(mktemp -d)"
 MIT. The vendored nlohmann/json header retains its own MIT license. See [THIRD_PARTY.md](THIRD_PARTY.md).
 
 First launch shows a standalone setup window. Grant Screen Recording permission, then press Start recording to enter the timeline. The main interface is hidden until setup succeeds. Timeline segments have consistent app colors and scroll horizontally with a trackpad or mouse wheel. Open the gear for Capture, Privacy, and Storage settings; Capture also lets you replay the introduction.
+
+Settings opens in its own native window. Capture, Privacy, and Storage changes save automatically. Storage reports total archive size plus screenshot and database usage. Scrolling over the timeline advances saved frames (vertical mouse wheel or horizontal trackpad); the timeline keeps the selection visible.
+
+The build prefers the installed Xcode toolchain and passes its SDK explicitly to Swift. On this Mac it now uses Swift 6.3.3 and the macOS 26.5 SDK, enabling native Liquid Glass on macOS 26.

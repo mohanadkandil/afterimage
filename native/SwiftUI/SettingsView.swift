@@ -1,107 +1,218 @@
 import AppKit
-import Observation
 import SwiftUI
 
 struct SettingsView: View {
   @Bindable var model: MemoryModel
   @State var prefs: Preferences
   @State private var extra = ""
-  @State private var tab = "Capture"
-  var body: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Text("Settings").font(.system(size: 20, weight: .semibold))
-        Spacer()
-        IconButton(symbol: "xmark", title: "Close settings") { model.showSettings = false }
-      }.padding(24)
-      Picker("Settings section", selection: $tab) {
-        Text("Capture").tag("Capture")
-        Text("Privacy").tag("Privacy")
-        Text("Storage").tag("Storage")
-      }.pickerStyle(.segmented).labelsHidden().padding(.horizontal, 24).padding(.bottom, 12)
-      Form {
-        if tab == "Capture" {
-          Section("Capture") {
-            Picker("Sample every", selection: $prefs.interval) {
-              ForEach([1, 2, 5, 10, 30], id: \.self) { Text("\($0) seconds").tag($0) }
-            }
+  @State var tab = "Capture"
+  @State private var saving = false
+  @Environment(\.colorScheme) private var scheme
 
-            Text("Similar frames are skipped. Recording starts only when you choose.").font(
-              .caption
-            )
-            .foregroundStyle(.secondary)
-          }
-          Section("Getting started") {
-            LabeledContent(
-              "Screen Recording", value: model.state.permission ? "Allowed" : "Not allowed")
-            Button("Screen Recording permission…") { Task { await model.action("permission") } }
-            Button("Replay introduction") {
-              model.replayIntroduction = true
-              model.showSettings = false
-            }
-          }
-        }
-        if tab == "Privacy" {
-          Section("Excluded apps") {
-            ForEach(model.state.runningApps) { app in
-              Toggle(
-                isOn: Binding(
-                  get: { prefs.excluded.contains(app.bundle) },
-                  set: {
-                    if $0 {
-                      if !prefs.excluded.contains(app.bundle) { prefs.excluded.append(app.bundle) }
-                    } else {
-                      prefs.excluded.removeAll { $0 == app.bundle }
-                    }
-                  })
-              ) {
+  var body: some View {
+    HStack(spacing: 0) {
+      VStack(alignment: .leading, spacing: 6) {
+        Text("Settings").font(.system(size: 17, weight: .semibold)).padding(.bottom, 22)
+        navigation("Capture", symbol: "record.circle")
+        navigation("Privacy", symbol: "hand.raised")
+        navigation("Storage", symbol: "externaldrive")
+        Spacer()
+        Label("Only on this Mac", systemImage: "lock")
+          .font(.system(size: 10)).foregroundStyle(.secondary)
+      }.padding(18).padding(.top, 36).frame(width: 190)
+        .frame(maxHeight: .infinity).background(.ultraThinMaterial)
+      VStack(alignment: .leading, spacing: 0) {
+        HStack {
+          Text(tab).font(.system(size: 23, weight: .semibold)).tracking(-0.4)
+          Spacer()
+          if saving { ProgressView().controlSize(.small).accessibilityLabel("Saving settings") }
+        }.padding(.horizontal, 28).padding(.top, 40).padding(.bottom, 24)
+        ScrollView {
+          VStack(alignment: .leading, spacing: 18) {
+            if tab == "Capture" {
+              group {
                 HStack {
-                  AppLogo(model: model, bundle: app.bundle, size: 20)
-                  Text(app.name)
+                  description("Screen capture", detail: model.state.captureState)
+                  Spacer()
+                  Toggle(
+                    "Screen capture",
+                    isOn: Binding(
+                      get: { model.state.recording },
+                      set: { _ in
+                        Task { await model.toggleRecording() }
+                      })
+                  ).labelsHidden().toggleStyle(.switch).fixedSize()
+                }
+                Divider().opacity(0.35)
+                HStack {
+                  description("Sampling", detail: "Similar frames are skipped.")
+                  Spacer()
+                  Menu {
+                    ForEach([1, 2, 5, 10, 30], id: \.self) { value in
+                      Button("Every \(value) seconds") { prefs.interval = value }
+                    }
+                  } label: {
+                    Text("Every \(prefs.interval)s")
+                  }
+                  .menuStyle(.borderlessButton).fixedSize().accessibilityLabel("Sample every")
                 }
               }
+              group {
+                HStack {
+                  description(
+                    "Screen permission",
+                    detail: model.state.permission ? "Ready to capture" : "Access required")
+                  Spacer()
+                  Button("Manage…") { Task { await model.action("permission") } }.buttonStyle(
+                    QuietButton())
+                }
+                Divider().opacity(0.35)
+                HStack {
+                  description("Introduction", detail: "Walk through setup again.")
+                  Spacer()
+                  Button("Open") {
+                    model.replayIntroduction = true
+                    model.showSettings = false
+                  }
+                  .buttonStyle(QuietButton())
+                }
+              }
+            } else if tab == "Privacy" {
+              Text("Capture pauses while an excluded app is in focus.")
+                .font(.system(size: 12)).foregroundStyle(.secondary)
+              group {
+                ForEach(model.state.runningApps) { app in
+                  HStack(spacing: 10) {
+                    AppLogo(model: model, bundle: app.bundle, size: 24)
+                    Text(app.name).font(.system(size: 13))
+                    Spacer()
+                    Toggle(
+                      "Exclude \(app.name)",
+                      isOn: Binding(
+                        get: { prefs.excluded.contains(app.bundle) },
+                        set: { value in
+                          prefs.excluded.removeAll { $0 == app.bundle }
+                          if value { prefs.excluded.append(app.bundle) }
+                        })
+                    ).labelsHidden().toggleStyle(.switch).fixedSize()
+                  }.padding(.vertical, 3)
+                }
+                if model.state.runningApps.isEmpty {
+                  Text("Open an app to add it here.").foregroundStyle(.secondary)
+                }
+              }
+              DisclosureGroup("Other excluded apps") {
+                VStack(alignment: .leading, spacing: 8) {
+                  ForEach(
+                    prefs.excluded.filter { id in
+                      !model.state.runningApps.contains { $0.bundle == id }
+                    }, id: \.self
+                  ) { id in
+                    HStack {
+                      Text(id).font(.caption)
+                      Spacer()
+                      Button("Remove") { prefs.excluded.removeAll { $0 == id } }.buttonStyle(
+                        .borderless)
+                    }
+                  }
+                  TextField("App bundle ID", text: $extra).textFieldStyle(.roundedBorder).onSubmit {
+                    let value = extra.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !value.isEmpty && !prefs.excluded.contains(value) {
+                      prefs.excluded.append(value)
+                    }
+                    extra = ""
+                  }
+                }.padding(.top, 10)
+              }.font(.system(size: 12))
+            } else {
+              VStack(alignment: .leading, spacing: 7) {
+                Text(bytes(model.state.diskBytes)).font(.system(size: 38, weight: .medium))
+                  .tracking(-1.2)
+                Text("Total stored · \(model.state.count) moments").font(.system(size: 12))
+                  .foregroundStyle(.secondary)
+              }.padding(.bottom, 10)
+              group {
+                HStack {
+                  Text("Screenshots")
+                  Spacer()
+                  Text(bytes(model.state.imageBytes)).foregroundStyle(.secondary)
+                }
+                Divider().opacity(0.35)
+                HStack {
+                  Text("Text & database")
+                  Spacer()
+                  Text(bytes(max(0, model.state.diskBytes - model.state.imageBytes)))
+                    .foregroundStyle(.secondary)
+                }
+                Divider().opacity(0.35)
+                HStack {
+                  description("Keep history", detail: "Older moments are removed automatically.")
+                  Spacer()
+                  Menu {
+                    ForEach([1, 7, 14, 30, 90, 365], id: \.self) { value in
+                      Button("\(value) days") { prefs.retentionDays = value }
+                    }
+                  } label: {
+                    Text("\(prefs.retentionDays) days")
+                  }
+                  .menuStyle(.borderlessButton).fixedSize().accessibilityLabel("Keep history")
+                }
+              }
+              HStack {
+                Button("Show in Finder") { Task { await model.action("reveal") } }.buttonStyle(
+                  QuietButton())
+                Spacer()
+                Button("Delete history…", role: .destructive) {
+                  model.showSettings = false
+                  model.confirmClear = true
+                }.buttonStyle(.borderless)
+              }
             }
-            TextField("Additional bundle IDs", text: $extra, prompt: Text("com.example.private"))
-            Text("Recording waits while an excluded app is focused.").font(.caption)
-              .foregroundStyle(
-                .secondary)
-          }
+            if let error = model.error {
+              Text(error).font(.caption).foregroundStyle(.red).textSelection(.enabled)
+            }
+          }.padding(.horizontal, 28).padding(.bottom, 24)
         }
-        if tab == "Storage" {
-          Section("On this Mac") {
-            Picker("Keep history", selection: $prefs.retentionDays) {
-              ForEach([1, 7, 14, 30, 90, 365], id: \.self) { Text("\($0) days").tag($0) }
-            }
-            LabeledContent("Saved moments", value: "\(model.state.count)")
-            Text("Older moments are removed automatically. Your archive stays on this Mac.").font(
-              .caption
-            ).foregroundStyle(.secondary)
-            Button("Show archive in Finder") { Task { await model.action("reveal") } }
-            Button("Delete all history…", role: .destructive) {
-              model.showSettings = false
-              model.confirmClear = true
-            }
-          }
-        }
-      }.formStyle(.grouped)
-      HStack {
-        Text("Local storage · No account").font(.caption).foregroundStyle(.secondary)
-        Spacer()
-        Button("Cancel") { model.showSettings = false }.buttonStyle(QuietButton()).keyboardShortcut(
-          .cancelAction)
-        Button("Save") {
-          let known = Set(model.state.runningApps.map(\.bundle))
-          prefs.excluded =
-            prefs.excluded.filter { known.contains($0) }
-            + extra.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-          Task { await model.save(prefs) }
-        }.buttonStyle(QuietButton()).modifier(GlassSurface(interactive: true)).keyboardShortcut(
-          .defaultAction)
-      }.padding(20)
-    }.frame(width: 520, height: 570).background(Color(nsColor: .windowBackgroundColor)).onAppear {
-      let known = Set(model.state.runningApps.map(\.bundle))
-      extra = prefs.excluded.filter { !known.contains($0) }.joined(separator: ", ")
+      }.frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+          scheme == .dark
+            ? Color(red: 0.095, green: 0.10, blue: 0.105) : Color(nsColor: .windowBackgroundColor))
+    }.frame(width: 760, height: 560).ignoresSafeArea(.container, edges: .top).tint(Style.mint)
+      .onDisappear { Task { await model.save(prefs, close: false) } }
+      .task(id: prefs) {
+        do {
+          try await Task.sleep(for: .milliseconds(250))
+          saving = true
+          await model.save(prefs, close: false)
+          saving = false
+        } catch {}
+      }
+  }
+
+  private func navigation(_ title: String, symbol: String) -> some View {
+    Button {
+      tab = title
+    } label: {
+      Label(title, systemImage: symbol).font(
+        .system(size: 13, weight: tab == title ? .semibold : .regular)
+      )
+      .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12).frame(height: 38)
+      .modifier(SettingsSelection(selected: tab == title))
+    }.buttonStyle(.plain).accessibilityAddTraits(tab == title ? .isSelected : [])
+  }
+  private func description(_ title: String, detail: String) -> some View {
+    VStack(alignment: .leading, spacing: 5) {
+      Text(title).font(.system(size: 13, weight: .medium))
+      Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(
+        horizontal: false, vertical: true)
     }
+  }
+  private func group<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    VStack(alignment: .leading, spacing: 16, content: content).font(.system(size: 12))
+      .padding(18).frame(maxWidth: .infinity, alignment: .leading)
+      .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 14))
+  }
+  private func bytes(_ value: Int64) -> String {
+    ByteCountFormatter.string(fromByteCount: value, countStyle: .file)
   }
 }

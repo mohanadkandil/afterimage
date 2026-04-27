@@ -4,6 +4,8 @@ import SwiftUI
 
 struct ArchiveState: Decodable {
   var count: Int = 0
+  var diskBytes: Int64 = 0
+  var imageBytes: Int64 = 0
   var last: Double = 0
   var recording: Bool = false
   var captureState: String = "Paused"

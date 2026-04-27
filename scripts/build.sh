@@ -1,7 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
+  export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+  -DSWIFTC="$(xcrun --find swiftc)" \
+  -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
+  -DCMAKE_CXX_COMPILER="$(xcrun --find clang++)" \
+  -DCMAKE_OBJCXX_COMPILER="$(xcrun --find clang++)"
 cmake --build build -j 4
 mkdir -p build/Litt.app/Contents/Frameworks
 cp build/libLittViews.dylib build/Litt.app/Contents/Frameworks/libLittViews.dylib

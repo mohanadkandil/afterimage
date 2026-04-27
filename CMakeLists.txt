@@ -22,7 +22,7 @@ if(APPLE)
  file(GLOB_RECURSE SWIFT_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/native/SwiftUI/*.swift")
  set(SWIFT_LIBRARY "${CMAKE_BINARY_DIR}/libLittViews.dylib")
  add_custom_command(OUTPUT "${SWIFT_LIBRARY}" "${CMAKE_BINARY_DIR}/LittViews-Swift.h"
-   COMMAND ${SWIFTC} -swift-version 6 -O -parse-as-library -emit-library
+   COMMAND ${SWIFTC} -sdk "${CMAKE_OSX_SYSROOT}" -swift-version 6 -O -parse-as-library -emit-library
      -module-name LittViews -emit-objc-header -emit-objc-header-path "${CMAKE_BINARY_DIR}/LittViews-Swift.h"
      -target ${CMAKE_SYSTEM_PROCESSOR}-apple-macosx14.0 ${SWIFT_SOURCES}
      -Xlinker -install_name -Xlinker @rpath/libLittViews.dylib -o "${SWIFT_LIBRARY}"

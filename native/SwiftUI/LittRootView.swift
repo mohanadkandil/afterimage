@@ -3,6 +3,7 @@ import SwiftUI
 struct LittRootView: View {
   @Bindable var model: MemoryModel
   let setupChanged: (Bool) -> Void
+  let settingsChanged: (Bool) -> Void
   var body: some View {
     Group {
       if model.showOnboarding {
@@ -21,6 +22,7 @@ struct LittRootView: View {
       }
     }
     .task { model.start() }
+    .onChange(of: model.showSettings) { _, value in settingsChanged(value) }
     .onChange(of: model.showOnboarding) { _, value in setupChanged(value) }
   }
 }

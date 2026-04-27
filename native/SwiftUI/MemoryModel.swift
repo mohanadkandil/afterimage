@@ -215,14 +215,14 @@ import SwiftUI
       await refresh()
     } catch { self.error = error.localizedDescription }
   }
-  func save(_ prefs: Preferences) async {
+  func save(_ prefs: Preferences, close: Bool = true) async {
     do {
       let data = try JSONEncoder().encode(prefs)
       guard let args = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
         return
       }
       _ = try await call("settings", args)
-      showSettings = false
+      if close { showSettings = false }
       await refresh()
     } catch { self.error = error.localizedDescription }
   }
