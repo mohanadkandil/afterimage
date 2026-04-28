@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <mutex>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include <sqlite3.h>
 #include <string>
 #include <vector>
@@ -23,7 +24,8 @@ class Store {
     mutable std::recursive_mutex mutex_;
     void exec(const char* sql);
     json row(sqlite3_stmt*) const;
-    void cleanup();
+    std::optional<std::pair<long long, long long>> duplicate(const std::vector<unsigned char>&,
+                                                             long long exclude = -1);
 
   public:
     explicit Store(fs::path root);
@@ -41,6 +43,7 @@ class Store {
     json frame(long long id);
     fs::path image(long long id);
     json stats();
+    json optimize();
     void erase(long long id);
     int prune(int days, double now);
     json settings();

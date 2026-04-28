@@ -64,6 +64,7 @@ All commands return JSON and work without the app running. The CLI uses the same
 litt --help
 litt doctor
 litt stats
+litt optimize
 litt list --limit 20
 litt search 'sensor calibration' --app com.apple.Safari
 litt search 'localization' --from 1789084800 --to 1789171200
@@ -132,3 +133,13 @@ Settings opens in its own native window. Capture, Privacy, and Storage changes s
 The build prefers the installed Xcode toolchain and passes its SDK explicitly to Swift. On this Mac it now uses Swift 6.3.3 and the macOS 26.5 SDK, enabling native Liquid Glass on macOS 26.
 
 The timeline fits the full loaded range: consecutive samples from the same app are merged into continuous bands, recording gaps remain empty, and app icons are spaced to avoid overlap. Mouse and trackpad scrolling changes the selected frame without panning the track.
+
+## Storage optimization
+
+New byte-identical JPEGs share one file payload through hard links while retaining separate timestamps, OCR records, search results and frame paths. A fingerprint narrows candidates; byte-for-byte comparison verifies equality before sharing. Deleting or pruning one moment leaves other references intact. If hard links are unavailable, new captures fall back to independent files.
+
+Run `litt optimize` to consolidate an older archive without re-encoding images. It returns before/after statistics and is safe to repeat. Keep a backup before archive maintenance. When copying optimized archives, preserve hard links, or rerun optimization after restoring the copy. An interrupted optimization can leave storage counts overstated until rerun; image contents remain intact.
+
+`stats` reports `imageBytes` for distinct shared payloads, `logicalImageBytes` for the sum across moments, `deduplicatedBytes` for avoided duplicate bytes, and `diskBytes` for image payloads plus root-level database/settings files. These are file byte sizes, not filesystem allocated-block measurements or backup usage.
+
+The decoded image cache has a 64 MiB cost limit (estimated width × height × 4), alongside its 16-entry limit. NSCache eviction is advisory; this is not a limit on total app memory. JPEG quality and capture thresholds remain unchanged. Measured results and codec tradeoffs: [optimization report](docs/storage-optimization.md).

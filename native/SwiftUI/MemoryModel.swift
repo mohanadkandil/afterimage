@@ -39,6 +39,7 @@ import SwiftUI
     self.bridge = bridge
     self.root = URL(fileURLWithPath: root)
     images.countLimit = 16
+    images.totalCostLimit = 64 * 1024 * 1024
     showOnboarding = !FileManager.default.fileExists(
       atPath: self.root.appendingPathComponent(".onboarding-v2-complete").path)
   }
@@ -234,7 +235,7 @@ import SwiftUI
     guard let image = NSImage(contentsOf: root.appendingPathComponent("frames/\(m.id).jpg")) else {
       return nil
     }
-    images.setObject(image, forKey: NSNumber(value: m.id))
+    images.setObject(image, forKey: NSNumber(value: m.id), cost: m.width * m.height * 4)
     return image
   }
   func appIcon(_ bundle: String) -> NSImage? {

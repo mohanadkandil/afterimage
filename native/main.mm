@@ -149,29 +149,33 @@ static int cli(int argc, char** argv) {
     try {
         std::string command = argv[1];
         if (command == "--help" || command == "help" || command == "-h") {
-            std::cout << "Litt 0.1.0 — local, searchable screen memory\n\nUsage: "
-                         "litt [command]\n  (no command)                 Open the "
-                         "desktop app\n  search TEXT [options]        Search visible text "
-                         "and titles (literal AND terms)\n  list [options]               "
-                         "List captured/imported frames, newest first\n  frame ID          "
-                         "           Full metadata and normalized OCR boxes\n  stats       "
-                         "                 Archive counts, app counts and disk usage\n  "
-                         "doctor                       Permission status and archive "
-                         "location\n  import IMAGE [--time EPOCH]   OCR and archive an "
-                         "image locally\n  export ID OUTPUT.jpg         Export a saved "
-                         "screenshot\n  delete ID                    Delete a screenshot "
-                         "and its search entry\n  prune DAYS                   Delete "
-                         "frames older than DAYS\n  settings                     Read "
-                         "capture/retention/exclusion settings\n\nOptions: --app BUNDLE_ID "
-                         "--from EPOCH --to EPOCH --limit N --offset N\nAll results are "
-                         "JSON. LITT_HOME overrides the local archive "
-                         "directory.\nThe app is not required for archive queries. "
-                         "Start/stop recording in the app.\n";
+            std::cout
+                << "Litt 0.1.0 — local, searchable screen memory\n\nUsage: "
+                   "litt [command]\n  (no command)                 Open the "
+                   "desktop app\n  search TEXT [options]        Search visible text "
+                   "and titles (literal AND terms)\n  list [options]               "
+                   "List captured/imported frames, newest first\n  frame ID          "
+                   "           Full metadata and normalized OCR boxes\n  stats       "
+                   "                 Archive counts, app counts and disk usage\n  "
+                   "optimize                     Share identical screenshot data losslessly\n  "
+                   "doctor                       Permission status and archive "
+                   "location\n  import IMAGE [--time EPOCH]   OCR and archive an "
+                   "image locally\n  export ID OUTPUT.jpg         Export a saved "
+                   "screenshot\n  delete ID                    Delete a screenshot "
+                   "and its search entry\n  prune DAYS                   Delete "
+                   "frames older than DAYS\n  settings                     Read "
+                   "capture/retention/exclusion settings\n\nOptions: --app BUNDLE_ID "
+                   "--from EPOCH --to EPOCH --limit N --offset N\nAll results are "
+                   "JSON. LITT_HOME overrides the local archive "
+                   "directory.\nThe app is not required for archive queries. "
+                   "Start/stop recording in the app.\n";
             return 0;
         }
         archive = std::make_unique<Store>(defaultRoot());
         json result;
-        if (command == "stats") {
+        if (command == "optimize") {
+            result = archive->optimize();
+        } else if (command == "stats") {
             result = archive->stats();
         } else if (command == "settings") {
             result = archive->settings();

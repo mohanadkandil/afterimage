@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-12",
+  "platform": "macOS-26.6-arm64-arm-64bit",
+  "migration": {
+    "before": {
+      "uniqueFiles": 182,
+      "imageBytes": 63891601
+    },
+    "after": {
+      "uniqueFiles": 146,
+      "imageBytes": 52596561
+    },
+    "moments": 182,
+    "allHashesAndMetadataUnchanged": true,
+    "idempotent": true,
+    "optimizeMs": 375.60229200000003
+  },
+  "archive": {
+    "before": {
+      "count": 182,
+      "imageBytes": 63891601,
+      "diskBytes": 67717371,
+      "uniqueImages": 182,
+      "deduplicatedBytes": 0
+    },
+    "after": {
+      "count": 182,
+      "imageBytes": 52596561,
+      "diskBytes": 56459091,
+      "uniqueImages": 146,
+      "deduplicatedBytes": 11295040
+    }
+  },
+  "runtime": {
+    "before": {
+      "imports": 8,
+      "importMedianMs": 791.7579165,
+      "searchMedianMs": 10.904791500000233,
+      "uniqueImages": 8,
+      "imageBytes": 2477976
+    },
+    "after": {
+      "imports": 8,
+      "importMedianMs": 781.3986044999997,
+      "searchMedianMs": 8.371750000000233,
+      "uniqueImages": 1,
+      "imageBytes": 309747
+    }
+  },
+  "codecs": [
+    {
+      "codec": "public.heic",
+      "quality": 0.7,
+      "samples": 8,
+      "sizeReductionPercent": 53.79298180724486,
+      "medianEncodeMs": 24.389982223510742,
+      "medianDecodeMs": 15.752017498016357,
+      "meanOCRTokenRecall": 0.9811717233799121,
+      "minimumOCRTokenRecall": 0.946236559139785
+    },
+    {
+      "codec": "public.heic",
+      "quality": 0.86,
+      "samples": 8,
+      "sizeReductionPercent": 40.87552017143034,
+      "medianEncodeMs": 22.04793691635132,
+      "medianDecodeMs": 16.505002975463867,
+      "meanOCRTokenRecall": 0.9789364913624471,
+      "minimumOCRTokenRecall": 0.9516129032258065
+    },
+    {
+      "codec": "public.jpeg",
+      "quality": 0.7,
+      "samples": 8,
+      "sizeReductionPercent": 25.53116224215194,
+      "medianEncodeMs": 9.395003318786621,
+      "medianDecodeMs": 5.11699914932251,
+      "meanOCRTokenRecall": 0.9684174118770388,
+      "minimumOCRTokenRecall": 0.9190751445086706
+    }
+  ]
+}

@@ -32,6 +32,16 @@ int main() {
             check(store.frames("robot", "app.other").empty(), "App filtering");
             check(store.frames("", "", f.time + 1, f.time + 2).empty(), "Time filtering");
             check(fs::exists(store.image(id)), "Image persisted");
+            auto duplicateId = store.add(f, {1, 2, 3});
+            check(fs::equivalent(store.image(id), store.image(duplicateId)),
+                  "Duplicate images share storage");
+            check(store.stats()["imageBytes"] == 3, "Physical bytes count shared image once");
+            check(store.stats()["logicalImageBytes"] == 6, "Logical bytes retain both moments");
+            store.erase(duplicateId);
+            check(fs::exists(store.image(id)), "Deleting shared frame preserves other frame");
+            auto optimized = store.optimize();
+            check(optimized["after"]["count"] == 1, "Optimization preserves moments");
+
             f.time -= 86400 * 20;
             f.title = "Old";
             store.add(f, {4, 5});
