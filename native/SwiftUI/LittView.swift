@@ -60,7 +60,7 @@ struct LittView: View {
           .help("Import and export").accessibilityLabel("Import and export")
       }.padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 4)
       if !model.moments.isEmpty {
-        TimelineView(model: model).frame(height: 44).padding(.horizontal, 22).padding(.bottom, 8)
+        TimelineView(model: model).frame(height: 52).padding(.horizontal, 22).padding(.bottom, 8)
       }
     }
     .ignoresSafeArea(.container, edges: .top)

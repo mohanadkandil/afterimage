@@ -130,3 +130,5 @@ First launch shows a standalone setup window. Grant Screen Recording permission,
 Settings opens in its own native window. Capture, Privacy, and Storage changes save automatically. Storage reports total archive size plus screenshot and database usage. Scrolling over the timeline advances saved frames (vertical mouse wheel or horizontal trackpad); the timeline keeps the selection visible.
 
 The build prefers the installed Xcode toolchain and passes its SDK explicitly to Swift. On this Mac it now uses Swift 6.3.3 and the macOS 26.5 SDK, enabling native Liquid Glass on macOS 26.
+
+The timeline fits the full loaded range: consecutive samples from the same app are merged into continuous bands, recording gaps remain empty, and app icons are spaced to avoid overlap. Mouse and trackpad scrolling changes the selected frame without panning the track.
