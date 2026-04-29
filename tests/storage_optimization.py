@@ -19,6 +19,9 @@ with tempfile.TemporaryDirectory(prefix="litt-storage-test-") as directory:
         return json.loads(result.stdout)
 
     # Create real OCR records, then reproduce v1's independent image storage.
+    run("stats")
+    with sqlite3.connect(root / "archive.sqlite") as db:
+        db.execute("INSERT INTO settings(key,value) VALUES(?,?)", ("compressionMode", '"jpeg"'))
     fixture = str(Path(__file__).with_name("fixture.png"))
     run("import", fixture)
     run("import", fixture)
@@ -42,7 +45,7 @@ with tempfile.TemporaryDirectory(prefix="litt-storage-test-") as directory:
     with sqlite3.connect(root / "archive.sqlite") as db:
         migrated = db.execute("SELECT * FROM frames ORDER BY id").fetchall()
         assert [row[:len(original[0])] for row in migrated] == original
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 3
     assert run("optimize")["after"]["imageBytes"] == len(data)
     run("delete", images[0].stem)
     assert images[1].read_bytes() == data

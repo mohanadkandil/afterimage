@@ -31,7 +31,9 @@ struct FilmstripView: View {
                   Text(moment.date, format: .dateTime.hour().minute()).monospacedDigit()
                 }.font(.system(size: 9)).foregroundStyle(.secondary).frame(width: 108)
               }.padding(2)
-            }.buttonStyle(.plain).id(moment.id).help("\(moment.app) · \(moment.title)")
+            }.task(id: moment.id) { await model.loadImage(moment) }.buttonStyle(.plain).id(
+              moment.id
+            ).help("\(moment.app) · \(moment.title)")
               .accessibilityLabel(
                 "\(moment.app), \(moment.date.formatted(date: .abbreviated, time: .standard))")
           }

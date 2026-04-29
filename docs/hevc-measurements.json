@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-12",
+  "frames": 182,
+  "previousDeduplicatedArchiveBytes": 56459091,
+  "originalArchiveBytes": 67709131,
+  "variants": [
+    {
+      "quality": 0.75,
+      "videoBytes": 7324792,
+      "archiveBytesWithoutCache": 11199610,
+      "medianPSNRdB": 44.04128545356472,
+      "minimumPSNRdB": 37.17051094366097,
+      "meanOCRTokenRecall": 0.9711433927117806,
+      "minimumOCRTokenRecall": 0.9247311827956989,
+      "meanOCRTokenPrecision": 0.9612341134808918
+    },
+    {
+      "quality": 0.8,
+      "videoBytes": 9515948,
+      "archiveBytesWithoutCache": 13390766,
+      "medianPSNRdB": 45.53817088406129,
+      "minimumPSNRdB": 37.949358018957646,
+      "meanOCRTokenRecall": 0.9698051553404667,
+      "minimumOCRTokenRecall": 0.9132947976878613,
+      "meanOCRTokenPrecision": 0.9658956701321149
+    },
+    {
+      "quality": 0.9,
+      "videoBytes": 17958668,
+      "archiveBytesWithoutCache": 21833486,
+      "medianPSNRdB": 48.12065517511378,
+      "minimumPSNRdB": 39.04350762712346,
+      "meanOCRTokenRecall": 0.9707232850646883,
+      "minimumOCRTokenRecall": 0.9075144508670521,
+      "meanOCRTokenPrecision": 0.9709786950664213
+    }
+  ],
+  "balancedIntegrity": {
+    "count": 182,
+    "allMetadataUnchanged": true,
+    "allFramesDecoded": true,
+    "medianExportMs": 222.12220800000182,
+    "p95ExportMs": 264.4992079999966,
+    "medianPSNR": 45.53817088406129,
+    "minPSNR": 37.949358018957646
+  },
+  "search": {
+    "before": {
+      "medianSearchMs": 30.93954199999996,
+      "searches": 20,
+      "matchedCounts": {
+        "the": 179,
+        "software": 71,
+        "project": 94,
+        "screen": 11
+      }
+    },
+    "after": {
+      "medianSearchMs": 31.263270499999994,
+      "searches": 20,
+      "matchedCounts": {
+        "the": 179,
+        "software": 71,
+        "project": 94,
+        "screen": 11
+      }
+    },
+    "allSearchResultsIdentical": true
+  },
+  "balancedCompaction": {
+    "wallSeconds": 3.59,
+    "userSeconds": 1.87,
+    "systemSeconds": 0.64,
+    "peakRSSBytes": 114130944
+  },
+  "estimatedEightActiveHoursGB": 1.0594891780219782,
+  "liveMigration": {
+    "before": {
+      "count": 182,
+      "imageBytes": 52596561,
+      "diskBytes": 56479723,
+      "videoBytes": 0,
+      "cacheBytes": 0
+    },
+    "after": {
+      "count": 182,
+      "imageBytes": 9515948,
+      "diskBytes": 13411246,
+      "videoBytes": 9515948,
+      "cacheBytes": 0
+    }
+  },
+  "liveVerification": {
+    "count": 182,
+    "allFramesMatchTestedDecode": true
+  }
+}

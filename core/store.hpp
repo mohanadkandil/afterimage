@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <functional>
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <optional>
@@ -18,7 +19,16 @@ struct Frame {
     json boxes = json::array();
 };
 
+struct SegmentCodec {
+    std::function<void(const std::vector<fs::path>&, const fs::path&, double)> encode;
+    std::function<void(const fs::path&, int, const fs::path&)> decode;
+};
+
 class Store {
+    SegmentCodec codec_;
+    void eraseMany(const std::vector<long long>& ids);
+    fs::path still(long long id) const;
+    void cleanupMedia();
     sqlite3* db_ = nullptr;
     fs::path root_;
     mutable std::recursive_mutex mutex_;
@@ -28,7 +38,7 @@ class Store {
                                                              long long exclude = -1);
 
   public:
-    explicit Store(fs::path root);
+    explicit Store(fs::path root, SegmentCodec codec = {});
     ~Store();
     Store(const Store&) = delete;
     Store& operator=(const Store&) = delete;
@@ -44,6 +54,8 @@ class Store {
     fs::path image(long long id);
     json stats();
     json optimize();
+    json compact(bool flush = true);
+    void clear();
     void erase(long long id);
     int prune(int days, double now);
     json settings();

@@ -47,6 +47,8 @@ struct ScreenshotView: View {
             }
             Spacer()
           }.padding(14).allowsHitTesting(false)
+        } else if model.current != nil {
+          ProgressView().controlSize(.small).accessibilityLabel("Loading saved moment")
         } else {
           VStack(spacing: 14) {
             Image(systemName: model.query.isEmpty ? "clock.arrow.circlepath" : "magnifyingglass")
@@ -67,5 +69,9 @@ struct ScreenshotView: View {
         }
       }.clipped()
     }.frame(minHeight: 140)
+      .task(id: model.selected) {
+        if let current = model.current { await model.loadImage(current) }
+      }
+
   }
 }

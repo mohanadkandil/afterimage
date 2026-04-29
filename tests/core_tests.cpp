@@ -79,6 +79,26 @@ int main() {
             check(reopened.stats()["count"] == 10, "Persistent reopen");
             check(reopened.settings()["excluded"][0] == "private.app", "Persistent preferences");
         }
+        {
+            SegmentCodec failing;
+            failing.encode = [](const auto&, const fs::path&, double) {
+                throw std::runtime_error("Injected encoder failure");
+            };
+            failing.decode = [](const fs::path&, int, const fs::path&) {};
+            Store store(path, failing);
+            bool failed = false;
+            try {
+                store.compact();
+            } catch (...) {
+                failed = true;
+            }
+            check(failed, "Encoding failure propagates");
+            check(store.stats()["count"] == 10, "Encoding failure preserves rows");
+            for (auto& frame : store.frames()) {
+                check(fs::exists(store.image(frame["id"])),
+                      "Encoding failure preserves image files");
+            }
+        }
         ChangeGate gate;
         std::vector<unsigned char> pixels(14400, 50);
         check(gate.changed(pixels, "app", 100), "Initial frame");

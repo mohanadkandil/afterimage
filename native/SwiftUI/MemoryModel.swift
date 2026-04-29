@@ -33,6 +33,8 @@ import SwiftUI
   @ObservationIgnored private var missingIcons: Set<String> = []
   @ObservationIgnored private var icons: [String: NSImage] = [:]
   @ObservationIgnored private let images = NSCache<NSNumber, NSImage>()
+  private var imageRevision = 0
+  @ObservationIgnored private var loadingImages: Set<Int64> = []
   var current: Moment? { moments.first { $0.id == selected } }
   var index: Int { moments.firstIndex { $0.id == selected } ?? 0 }
   init(bridge: LittBridge, root: String) {
@@ -123,6 +125,7 @@ import SwiftUI
       guard token == generation else { return }
       moments = try JSONDecoder().decode([Moment].self, from: data).reversed()
       if !moments.contains(where: { $0.id == selected }) { selected = moments.last?.id }
+      if let current { await loadImage(current) }
       if moments.isEmpty {
         stopPlayback()
         showDetails = false
@@ -231,12 +234,25 @@ import SwiftUI
     do { _ = try await call(name) } catch { self.error = error.localizedDescription }
   }
   func image(_ m: Moment) -> NSImage? {
-    if let image = images.object(forKey: NSNumber(value: m.id)) { return image }
-    guard let image = NSImage(contentsOf: root.appendingPathComponent("frames/\(m.id).jpg")) else {
-      return nil
-    }
-    images.setObject(image, forKey: NSNumber(value: m.id), cost: m.width * m.height * 4)
-    return image
+    _ = imageRevision
+    return images.object(forKey: NSNumber(value: m.id))
+  }
+  func loadImage(_ m: Moment) async {
+    guard images.object(forKey: NSNumber(value: m.id)) == nil,
+      !loadingImages.contains(m.id)
+    else { return }
+    loadingImages.insert(m.id)
+    defer { loadingImages.remove(m.id) }
+    do {
+      let data = try await call("image", ["id": m.id, "priority": m.id == selected])
+      guard !Task.isCancelled else { return }
+      guard let result = try JSONSerialization.jsonObject(with: data) as? [String: String],
+        let path = result["path"], let image = NSImage(contentsOfFile: path)
+      else { return }
+      guard moments.contains(where: { $0.id == m.id }) else { return }
+      images.setObject(image, forKey: NSNumber(value: m.id), cost: m.width * m.height * 4)
+      imageRevision += 1
+    } catch { if selected == m.id { self.error = error.localizedDescription } }
   }
   func appIcon(_ bundle: String) -> NSImage? {
     if let icon = icons[bundle] { return icon }

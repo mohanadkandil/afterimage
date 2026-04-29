@@ -1,10 +1,12 @@
 #import "NativeUI.hpp"
+#import "SegmentCodec.hpp"
 #include "store.hpp"
 #import <Cocoa/Cocoa.h>
 #import <ImageIO/ImageIO.h>
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <Vision/Vision.h>
+#include <atomic>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -99,8 +101,10 @@ static Prepared prepare(CGImageRef image, Frame f) {
                                {"confidence", text.confidence}});
         }
         NSMutableData* data = [NSMutableData data];
+        bool keepJPEG = archive->settings().value("compressionMode", "balanced") == "jpeg";
         CGImageDestinationRef dest = CGImageDestinationCreateWithData(
-            (__bridge CFMutableDataRef)data, CFSTR("public.jpeg"), 1, nil);
+            (__bridge CFMutableDataRef)data, keepJPEG ? CFSTR("public.jpeg") : CFSTR("public.png"),
+            1, nil);
         if (!dest) {
             throw std::runtime_error("Could not create image encoder");
         }
@@ -121,7 +125,12 @@ static Prepared prepare(CGImageRef image, Frame f) {
 
 static long long ingest(CGImageRef image, Frame f) {
     auto p = prepare(image, std::move(f));
-    return archive->add(p.frame, p.bytes);
+    auto id = archive->add(p.frame, p.bytes);
+    try {
+        archive->compact(false);
+    } catch (const std::exception&) { /* Saved stills remain readable; maintenance can retry. */
+    }
+    return id;
 }
 
 static long long importImage(const std::string& path, double time) {
@@ -157,6 +166,7 @@ static int cli(int argc, char** argv) {
                    "List captured/imported frames, newest first\n  frame ID          "
                    "           Full metadata and normalized OCR boxes\n  stats       "
                    "                 Archive counts, app counts and disk usage\n  "
+                   "compact                      Compress pending screenshots into HEVC chunks\n  "
                    "optimize                     Share identical screenshot data losslessly\n  "
                    "doctor                       Permission status and archive "
                    "location\n  import IMAGE [--time EPOCH]   OCR and archive an "
@@ -171,9 +181,11 @@ static int cli(int argc, char** argv) {
                    "Start/stop recording in the app.\n";
             return 0;
         }
-        archive = std::make_unique<Store>(defaultRoot());
+        archive = std::make_unique<Store>(defaultRoot(), appleSegmentCodec());
         json result;
-        if (command == "optimize") {
+        if (command == "compact") {
+            result = archive->compact();
+        } else if (command == "optimize") {
             result = archive->optimize();
         } else if (command == "stats") {
             result = archive->stats();
@@ -200,7 +212,10 @@ static int cli(int argc, char** argv) {
             }
             result = archive->frame(importImage(argv[2], time));
         } else if (command == "export" && argc == 4) {
-            fs::copy_file(archive->image(std::stoll(argv[2])), argv[3]);
+            if (fs::exists(argv[3])) {
+                throw std::runtime_error("Export destination already exists");
+            }
+            exportScreenshot(archive->image(std::stoll(argv[2])), argv[3]);
             result = {{"exported", argv[3]}};
         } else if (command == "search" || command == "list") {
             std::string q, app;
@@ -251,10 +266,11 @@ static int cli(int argc, char** argv) {
     NSStatusItem* statusItem;
     NSMenuItem* recordingItem;
     NSTimer* timer;
-    dispatch_queue_t worker;
+    dispatch_queue_t worker, imageWorker;
+    std::atomic<uint64_t> latestImageRequest;
     BOOL recording, busy;
     NSInteger generation;
-    std::string captureState, lastError;
+    std::string captureState, lastError, compressionError;
     long long captured, skipped;
     double lastOCR;
     ChangeGate gate;
@@ -266,6 +282,8 @@ static int cli(int argc, char** argv) {
 
 - (void)applicationDidFinishLaunching:(NSNotification*)n {
     (void)n;
+    latestImageRequest = 0;
+    imageWorker = dispatch_queue_create("app.litt.images", DISPATCH_QUEUE_SERIAL);
     worker = dispatch_queue_create("app.litt.processing", DISPATCH_QUEUE_SERIAL);
     preferences = archive->settings();
     captureState = "Paused";
@@ -339,6 +357,22 @@ static int cli(int argc, char** argv) {
     statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     statusItem.button.title = @"◉";
     statusItem.button.toolTip = @"Litt — paused";
+    {
+        dispatch_async(worker, ^{
+          try {
+              Store storage(defaultRoot(), appleSegmentCodec());
+              storage.compact();
+              dispatch_async(dispatch_get_main_queue(), ^{
+                compressionError.clear();
+              });
+          } catch (const std::exception& e) {
+              std::string message = e.what();
+              dispatch_async(dispatch_get_main_queue(), ^{
+                compressionError = "Compression: " + message;
+              });
+          }
+        });
+    }
     NSMenu* menu = [[NSMenu alloc] init];
     NSMenuItem* open = [menu addItemWithTitle:@"Open Litt"
                                        action:@selector(showWindow:)
@@ -422,6 +456,7 @@ static int cli(int argc, char** argv) {
 }
 
 - (void)stop {
+    BOOL wasRecording = recording;
     recording = NO;
     generation++;
     [timer invalidate];
@@ -430,6 +465,22 @@ static int cli(int argc, char** argv) {
     recordingItem.title = @"Start recording";
     statusItem.button.title = @"◉";
     statusItem.button.toolTip = @"Litt — paused";
+    if (wasRecording) {
+        dispatch_async(worker, ^{
+          try {
+              Store storage(defaultRoot(), appleSegmentCodec());
+              storage.compact();
+              dispatch_async(dispatch_get_main_queue(), ^{
+                compressionError.clear();
+              });
+          } catch (const std::exception& e) {
+              std::string message = e.what();
+              dispatch_async(dispatch_get_main_queue(), ^{
+                compressionError = "Compression: " + message;
+              });
+          }
+        });
+    }
 }
 
 - (void)start {
@@ -619,6 +670,26 @@ static int cli(int argc, char** argv) {
                                                             archive->add(processed.frame,
                                                                          processed.bytes);
                                                             captured++;
+                                                            dispatch_async(worker, ^{
+                                                              try {
+                                                                  Store storage(
+                                                                      defaultRoot(),
+                                                                      appleSegmentCodec());
+                                                                  storage.compact(false);
+                                                                  dispatch_async(
+                                                                      dispatch_get_main_queue(), ^{
+                                                                        compressionError.clear();
+                                                                      });
+                                                              } catch (const std::exception& e) {
+                                                                  std::string message = e.what();
+                                                                  dispatch_async(
+                                                                      dispatch_get_main_queue(), ^{
+                                                                        lastError =
+                                                                            "Compression: " +
+                                                                            message;
+                                                                      });
+                                                              }
+                                                            });
                                                             lastOCR = ms;
                                                         } else {
                                                             skipped++;
@@ -645,7 +716,7 @@ static int cli(int argc, char** argv) {
     j["recording"] = (bool)recording;
     j["busy"] = (bool)busy;
     j["captureState"] = captureState;
-    j["error"] = lastError;
+    j["error"] = lastError.empty() ? compressionError : lastError;
     j["permission"] = (bool)CGPreflightScreenCaptureAccess();
     j["capturedThisSession"] = captured;
     j["skippedThisSession"] = skipped;
@@ -683,6 +754,42 @@ static int cli(int argc, char** argv) {
                                         args.value("from", 0.0), args.value("to", 1e15),
                                         args.value("limit", 200), args.value("offset", 0))
                   error:""];
+        } else if (action == "image") {
+            long long id = args.at("id");
+            bool priority = args.value("priority", false);
+            uint64_t imageToken = priority ? ++latestImageRequest : latestImageRequest.load();
+            dispatch_async(imageWorker, ^{
+              if (priority && imageToken != latestImageRequest.load()) {
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                    [self reply:request
+                         result:json {
+                             {
+                                 "cancelled", true
+                             }
+                         }
+                          error:""];
+                  });
+                  return;
+              }
+              try {
+                  Store reader(defaultRoot(), appleSegmentCodec());
+                  auto path = reader.image(id).string();
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                    [self reply:request
+                         result:json {
+                             {
+                                 "path", path
+                             }
+                         }
+                          error:""];
+                  });
+              } catch (const std::exception& e) {
+                  std::string message = e.what();
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                    [self reply:request result:nullptr error:message];
+                  });
+              }
+            });
         } else if (action == "frame") {
             [self reply:request result:archive->frame(args.at("id")) error:""];
         } else if (action == "toggle") {
@@ -711,27 +818,32 @@ static int cli(int argc, char** argv) {
               }
             });
         } else if (action == "delete") {
-            archive->erase(args.at("id"));
-            [self reply:request
-                 result:json {
-                     {
-                         "ok", true
-                     }
-                 }
-                  error:""];
+            long long id = args.at("id");
+            dispatch_async(worker, ^{
+              try {
+                  Store storage(defaultRoot(), appleSegmentCodec());
+                  storage.erase(id);
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                    [self reply:request
+                         result:json {
+                             {
+                                 "ok", true
+                             }
+                         }
+                          error:""];
+                  });
+              } catch (const std::exception& e) {
+                  std::string message = e.what();
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                    [self reply:request result:nullptr error:message];
+                  });
+              }
+            });
         } else if (action == "clear") {
             [self stop];
             dispatch_async(worker, ^{
               try {
-                  while (true) {
-                      auto frames = archive->frames("", "", 0, 1e15, 1000);
-                      if (frames.empty()) {
-                          break;
-                      }
-                      for (auto& f : frames) {
-                          archive->erase(f["id"]);
-                      }
-                  }
+                  archive->clear();
                   dispatch_async(dispatch_get_main_queue(), ^{
                     [self reply:request result:[self state] error:""];
                   });
@@ -801,8 +913,7 @@ static int cli(int argc, char** argv) {
                                 return;
                             }
                             try {
-                                fs::copy_file(path, str(panel.URL.path),
-                                              fs::copy_options::overwrite_existing);
+                                exportScreenshot(path, str(panel.URL.path));
                                 [self reply:request
                                      result:json {
                                          {
@@ -864,7 +975,7 @@ int main(int argc, char** argv) {
             smokeOutput = argv[2];
         }
         try {
-            archive = std::make_unique<Store>(defaultRoot());
+            archive = std::make_unique<Store>(defaultRoot(), appleSegmentCodec());
         } catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
             return 1;

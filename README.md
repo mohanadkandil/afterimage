@@ -65,6 +65,7 @@ litt --help
 litt doctor
 litt stats
 litt optimize
+litt compact
 litt list --limit 20
 litt search 'sensor calibration' --app com.apple.Safari
 litt search 'localization' --from 1789084800 --to 1789171200
@@ -134,12 +135,14 @@ The build prefers the installed Xcode toolchain and passes its SDK explicitly to
 
 The timeline fits the full loaded range: consecutive samples from the same app are merged into continuous bands, recording gaps remain empty, and app icons are spaced to avoid overlap. Mouse and trackpad scrolling changes the selected frame without panning the track.
 
-## Storage optimization
+## Storage
 
-New byte-identical JPEGs share one file payload through hard links while retaining separate timestamps, OCR records, search results and frame paths. A fingerprint narrows candidates; byte-for-byte comparison verifies equality before sharing. Deleting or pruning one moment leaves other references intact. If hard links are unavailable, new captures fall back to independent files.
+Balanced mode stores recordings in short HEVC chunks, with lossless staging until a chunk is committed. C++ owns batching, metadata, retention, recovery and cache accounting; Apple's native encoder and decoder handle media. Search uses the original OCR text and timestamps. Settings → Capture offers Balanced, Sharper and Keep JPEG images. Existing video chunks are not repeatedly recompressed when quality settings change.
 
-Run `litt optimize` to consolidate an older archive without re-encoding images. It returns before/after statistics and is safe to repeat. Keep a backup before archive maintenance. When copying optimized archives, preserve hard links, or rerun optimization after restoring the copy. An interrupted optimization can leave storage counts overstated until rerun; image contents remain intact.
+Run `litt compact` to compress an older archive or finalize pending frames. It preserves every moment but HEVC is lossy. Keep a backup before migration. `litt optimize` remains available for byte-identical still-image sharing. Export through the CLI or app rather than assuming each moment has a JPEG file.
 
-`stats` reports `imageBytes` for distinct shared payloads, `logicalImageBytes` for the sum across moments, `deduplicatedBytes` for avoided duplicate bytes, and `diskBytes` for image payloads plus root-level database/settings files. These are file byte sizes, not filesystem allocated-block measurements or backup usage.
+`stats` separates `videoBytes`, `stillBytes`, `cacheBytes`, `workingBytes` and total `diskBytes`. Totals use file byte sizes with hard links counted once, not filesystem allocated blocks; external backups are not included. Preview files are bounded at eight / approximately 32 MiB; the decoded image cache has an advisory 64 MiB cost limit. Pending input batches close at 30 frames or approximately 32 MiB, allowing one oversized image.
 
-The decoded image cache has a 64 MiB cost limit (estimated width × height × 4), alongside its 16-entry limit. NSCache eviction is advisory; this is not a limit on total app memory. JPEG quality and capture thresholds remain unchanged. Measured results and codec tradeoffs: [optimization report](docs/storage-optimization.md).
+Whole-chunk retention deletes media directly. A selective deletion preserves its surviving frames as PNGs and removes the old chunk; this can increase storage for that chunk but avoids leaving deleted pixels in a video or repeatedly degrading survivors.
+
+Measured on 182 moments: 67.7 MB originally, 56.5 MB after exact sharing, **13.4 MB with Balanced HEVC**, excluding generated previews. See the [HEVC results and limitations](docs/hevc-storage.md) and the earlier [lossless optimization report](docs/storage-optimization.md).

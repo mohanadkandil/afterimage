@@ -59,6 +59,21 @@ struct SettingsView: View {
               }
               group {
                 HStack {
+                  description("Storage quality", detail: "Applies to new recordings.")
+                  Spacer()
+                  Menu {
+                    Button("Balanced · HEVC") { prefs.compressionMode = "balanced" }
+                    Button("Sharper · HEVC") { prefs.compressionMode = "sharp" }
+                    Button("Keep JPEG images") { prefs.compressionMode = "jpeg" }
+                  } label: {
+                    Text(
+                      prefs.compressionMode == "sharp"
+                        ? "Sharper" : prefs.compressionMode == "jpeg" ? "JPEG images" : "Balanced")
+                  }.menuStyle(.borderlessButton).fixedSize().accessibilityLabel("Storage quality")
+                }
+              }
+              group {
+                HStack {
                   description(
                     "Screen permission",
                     detail: model.state.permission ? "Ready to capture" : "Access required")
@@ -133,16 +148,34 @@ struct SettingsView: View {
               }.padding(.bottom, 10)
               group {
                 HStack {
-                  Text("Screenshots")
+                  Text("Recordings")
                   Spacer()
                   Text(bytes(model.state.imageBytes)).foregroundStyle(.secondary)
                 }
                 Divider().opacity(0.35)
                 HStack {
+                  Text("Preview cache")
+                  Spacer()
+                  Text(bytes(model.state.cacheBytes)).foregroundStyle(.secondary)
+                }
+                Divider().opacity(0.35)
+                if model.state.workingBytes > 0 {
+                  HStack {
+                    Text("Temporary files")
+                    Spacer()
+                    Text(bytes(model.state.workingBytes)).foregroundStyle(.secondary)
+                  }
+                  Divider().opacity(0.35)
+                }
+                HStack {
                   Text("Text & database")
                   Spacer()
-                  Text(bytes(max(0, model.state.diskBytes - model.state.imageBytes)))
-                    .foregroundStyle(.secondary)
+                  Text(
+                    bytes(
+                      max(
+                        0, model.state.diskBytes - model.state.imageBytes - model.state.cacheBytes - model.state.workingBytes))
+                  )
+                  .foregroundStyle(.secondary)
                 }
                 Divider().opacity(0.35)
                 HStack {
