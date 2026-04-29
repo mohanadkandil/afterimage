@@ -7,8 +7,12 @@
 <p align="center">Find something you saw on your Mac.<br>Give your agent the context to help you with it.</p>
 
 <p align="center">
-  <a href="#try-it">Get started</a> · <a href="GUIDE.md">Guide</a> · <a href="docs/AGENT-SKILL.md">Use with an agent</a>
+  <a href="#try-it">Get started</a> · <a href="GUIDE.md">Guide</a> · <a href="skills/afterimage/SKILL.md">Use with an agent</a>
 </p>
+
+![Afterimage searching for Hugging Face and highlighting a matching passage in a saved browser frame](docs/images/program.png)
+
+I searched for "Hugging Face" to find something I'd been reading earlier. Afterimage brought back the browser frame, with the matching passage highlighted and the time it was captured.
 
 ## Why I built it
 
@@ -57,7 +61,7 @@ On a Mac with the build tools installed:
 
 Complete setup, grant Screen Recording permission, then press **Start recording**. The app starts paused. Use the gear to exclude apps or choose how long to keep history.
 
-For agent use, install the terminal launcher with `./scripts/install.sh` and give your agent the [archive skill guide](docs/AGENT-SKILL.md). It needs local terminal access; a chat window alone cannot read the archive. If you use a cloud agent, the history it reads becomes part of that agent's conversation.
+For agent use, install the terminal launcher with `./scripts/install.sh` and install the [Afterimage skill](skills/afterimage/SKILL.md) using the [setup instructions](GUIDE.md#use-with-an-agent). It needs local terminal access; a chat window alone cannot read the archive. If you use a cloud agent, the history it reads becomes part of that agent's conversation.
 
 ## Under the hood
 

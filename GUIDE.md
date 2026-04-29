@@ -82,7 +82,30 @@ afterimage prune 14
 
 Use `AFTERIMAGE_HOME=/path/to/archive` for an isolated archive. The default is `~/Library/Application Support/Afterimage`. The database uses WAL mode and a busy timeout for concurrent app/CLI access. Directory permissions are restricted to the current user. Data is not independently encrypted by Afterimage; OS disk encryption is separate.
 
-The agent usage guide is [docs/AGENT-SKILL.md](docs/AGENT-SKILL.md).
+## Use with an agent
+
+The portable skill lives at [skills/afterimage/SKILL.md](skills/afterimage/SKILL.md). It follows the [Agent Skills format](https://agentskills.io/specification): a folder with a capitalized `SKILL.md`, YAML `name` and `description`, and instructions for querying the archive.
+
+First install the app and CLI with `./scripts/install.sh`. Check that `afterimage --help` works in your agent's terminal; the installer places the launcher in `~/.local/bin`, which must be on its `PATH`.
+
+For Codex, copy the skill from the repository root:
+
+```sh
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/afterimage"
+cp skills/afterimage/SKILL.md "${CODEX_HOME:-$HOME/.codex}/skills/afterimage/SKILL.md"
+```
+
+Start a new agent session so it can discover the skill. For another Agent Skills-compatible client, copy the `skills/afterimage` folder into that client's skill directory. The destination depends on the client. An agent without skill discovery can still read `SKILL.md` when you give it the file, provided it has local terminal access.
+
+Try asking:
+
+> Use Afterimage to find the Hugging Face passage I read today. Show me the capture time and the matching text.
+
+Or:
+
+> Use Afterimage to review my week. Suggest one workflow improvement and cite the frames behind it.
+
+The skill teaches the agent to search and inspect evidence; it does not add a chat model to Afterimage. A remote chat window cannot read your Mac by itself. When a cloud agent reads archive results, that content enters its conversation.
 
 ## Engineering
 
