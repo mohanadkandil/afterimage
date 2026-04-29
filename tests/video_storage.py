@@ -25,10 +25,10 @@ def png(path, frame):
         return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data))
     path.write_bytes(b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(pixels)) + chunk(b'IEND', b''))
 
-with tempfile.TemporaryDirectory(prefix='litt-video-') as directory:
+with tempfile.TemporaryDirectory(prefix='afterimage-video-') as directory:
     base = Path(directory)
     root = base / 'archive'
-    env = dict(os.environ, LITT_HOME=str(root))
+    env = dict(os.environ, AFTERIMAGE_HOME=str(root))
     def run(*args):
         result = subprocess.run([binary, *map(str, args)], env=env, check=True,
                                 capture_output=True, text=True, timeout=30)
@@ -49,11 +49,11 @@ with tempfile.TemporaryDirectory(prefix='litt-video-') as directory:
     shutil.copytree(root, expired)
     with sqlite3.connect(expired / 'archive.sqlite') as db:
         db.execute('UPDATE frames SET time=?', (time.time() - 3 * 86400,))
-    env['LITT_HOME'] = str(expired)
+    env['AFTERIMAGE_HOME'] = str(expired)
     assert run('prune', 1)['deleted'] == 30
     assert run('stats')['count'] == 0
     assert not list((expired / 'segments').iterdir())
-    env['LITT_HOME'] = str(root)
+    env['AFTERIMAGE_HOME'] = str(root)
     old_segment = next((root / 'segments').glob('*.mp4'))
     export = base / 'survivor.png'
     run('export', rows[-1][0], export)

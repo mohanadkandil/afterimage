@@ -1,9 +1,9 @@
 #import "NativeUI.hpp"
-#import "LittViews-Swift.h"
+#import "AfterimageViews-Swift.h"
 
-@interface NativeUI () <LittBridge> {
+@interface NativeUI () <AfterimageBridge> {
     UIRequest request;
-    LittSwiftUI* swiftUI;
+    AfterimageSwiftUI* swiftUI;
 }
 
 @end
@@ -12,7 +12,7 @@
 - (instancetype)initWithRequest:(UIRequest)handler imageRoot:(NSString*)root {
     if ((self = [super init])) {
         request = [handler copy];
-        swiftUI = [[LittSwiftUI alloc] initWithBridge:self root:root];
+        swiftUI = [[AfterimageSwiftUI alloc] initWithBridge:self root:root];
         [self addChildViewController:swiftUI];
     }
     return self;

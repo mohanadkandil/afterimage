@@ -2,7 +2,7 @@ import AppKit
 import Observation
 import SwiftUI
 
-struct LittView: View {
+struct AfterimageView: View {
   @Bindable var model: MemoryModel
   @FocusState private var searchFocused: Bool
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -70,7 +70,7 @@ struct LittView: View {
     )
     .tint(Style.mint)
     .alert(
-      "Litt",
+      "Afterimage",
       isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })
     ) {
       if model.state.captureState == "Permission needed" {
@@ -101,7 +101,7 @@ struct LittView: View {
     }
     .onChange(of: model.day) { _, _ in Task { await model.filter() } }
     .onChange(of: model.app) { _, _ in Task { await model.filter() } }
-    .onReceive(NotificationCenter.default.publisher(for: .init("LittFocusSearch"))) { _ in
+    .onReceive(NotificationCenter.default.publisher(for: .init("AfterimageFocusSearch"))) { _ in
       searchFocused = true
     }
   }

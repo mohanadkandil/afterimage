@@ -13,7 +13,7 @@ let dir="\(root)/assets/AppIcon.iconset";try! FileManager.default.createDirector
 for size in [16,32,128,256,512]{for scale in [1,2]{let n=size*scale;let resized=image(NSSize(width:n,height:n)){icon.draw(in:NSRect(x:0,y:0,width:n,height:n))};save(resized,"\(dir)/icon_\(size)x\(size)\(scale==2 ? "@2x" : "").png")}}
 let fixture=image(NSSize(width:1440,height:900)){
  NSColor(calibratedRed:0.96,green:0.97,blue:0.95,alpha:1).setFill();NSRect(x:0,y:0,width:1440,height:900).fill()
- let text="LITT INTEGRATION TEST\n\nUnderwater robot localization\n\nCamera calibration and sensor synchronization\nRecorded observations should be searchable.\n\nExact marker: seahorse742\n\nThis is a generated test document, not recorded activity."
+ let text="AFTERIMAGE INTEGRATION TEST\n\nUnderwater robot localization\n\nCamera calibration and sensor synchronization\nRecorded observations should be searchable.\n\nExact marker: seahorse742\n\nThis is a generated test document, not recorded activity."
  let attrs:[NSAttributedString.Key:Any]=[.font:NSFont.systemFont(ofSize:32),.foregroundColor:NSColor.black]
  (text as NSString).draw(in:NSRect(x:90,y:120,width:1250,height:650),withAttributes:attrs)
 }

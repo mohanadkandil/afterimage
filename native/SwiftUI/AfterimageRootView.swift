@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct LittRootView: View {
+struct AfterimageRootView: View {
   @Bindable var model: MemoryModel
   let setupChanged: (Bool) -> Void
   let settingsChanged: (Bool) -> Void
@@ -18,7 +18,7 @@ struct LittRootView: View {
             Text(model.error ?? "")
           }
       } else {
-        LittView(model: model)
+        AfterimageView(model: model)
       }
     }
     .task { model.start() }

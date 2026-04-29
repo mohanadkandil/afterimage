@@ -1,10 +1,10 @@
-# Litt guide
+# Afterimage guide
 
 For the short introduction and example workflows, see the [README](README.md).
 
 A native SwiftUI screen-memory app for macOS, with a C++20 archive engine and a CLI for agents. Find something you saw, open the screenshot, and browse the moments around it.
 
-Litt samples the selected display (the main display by default), reads visible text with Apple's on-device Vision framework, and stores searchable screenshots on your Mac. Recording is off on launch. There are no accounts, network services, API keys, or bundled activity records.
+Afterimage samples the selected display (the main display by default), reads visible text with Apple's on-device Vision framework, and stores searchable screenshots on your Mac. Recording is off on launch. There are no accounts, network services, API keys, or bundled activity records.
 
 ## Build and run
 
@@ -12,24 +12,24 @@ Requires **macOS 14 or newer**, Apple Command Line Tools with Swift 6, CMake 3.2
 
 ```sh
 ./scripts/build.sh
-./litt
+./afterimage
 ```
 
 Install the app and terminal launcher:
 
 ```sh
 ./scripts/install.sh
-# App: ~/Applications/Litt.app
-# CLI: ~/.local/bin/litt
+# App: ~/Applications/Afterimage.app
+# CLI: ~/.local/bin/afterimage
 ```
 
-Click **Start recording**. On first use, grant Litt access in **System Settings → Privacy & Security → Screen & System Audio Recording**, then restart the app. Switch to another application; Litt deliberately does not capture while its own interface is focused. Permission is never required for importing screenshots or searching the archive.
+Click **Start recording**. On first use, grant Afterimage access in **System Settings → Privacy & Security → Screen & System Audio Recording**, then restart the app. Switch to another application; Afterimage deliberately does not capture while its own interface is focused. Permission is never required for importing screenshots or searching the archive.
 
 The build uses an available Apple Development signing identity, with ad-hoc signing as a fallback. Developer ID distribution and notarization are not included. This build is intended for local use; rebuilding or changing its installed location may require macOS permission to be granted again.
 
 ## Using the app
 
-![Litt first launch](docs/first-launch.png)
+![Afterimage first launch](docs/first-launch.png)
 
 - Search visible text or window titles. Search terms are literal words combined with AND, not a query language. Results are chronological, not AI-generated answers.
 - Choose a date and application. **Earlier / Newer** page through the entire matching archive in batches of 200.
@@ -51,7 +51,7 @@ The default sampling interval is **2 seconds** (configurable from 1–30 seconds
 2. A 160×90 grayscale comparison selects frames with sufficient visual change.
 3. Unchanged screens receive a checkpoint after 30 seconds.
 4. Only one capture/OCR job can be in flight, so slow OCR causes skipped sampling opportunities rather than an unbounded queue.
-5. Excluded application windows are filtered from the capture. If an excluded app is focused, capture waits entirely. Litt always excludes itself.
+5. Excluded application windows are filtered from the capture. If an excluded app is focused, capture waits entirely. Afterimage always excludes itself.
 6. OCR runs off the UI thread. Before saving, the app checks that recording is still enabled, the capture generation is current, and the focused app is not excluded.
 
 This is periodic capture with change-based saving, not a guarantee that every screen change is preserved. Small changes may be missed. OCR can misread text; inspect the screenshot for evidence. Capture includes visible content from other non-excluded windows on that display. Browser private tabs and sensitive content are not automatically detected; exclude the browser or pause recording as appropriate.
@@ -63,24 +63,24 @@ No microphone or audio is captured. The current release does not capture accessi
 All commands return JSON and work without the app running. The CLI uses the same C++ archive and SQLite database as the desktop app; it does not scrape the UI.
 
 ```sh
-litt --help
-litt doctor
-litt stats
-litt optimize
-litt compact
-litt list --limit 20
-litt search 'sensor calibration' --app com.apple.Safari
-litt search 'localization' --from 1789084800 --to 1789171200
-litt frame 12
-litt import ~/Desktop/screenshot.png
-litt export 12 ~/Desktop/moment.jpg
-litt delete 12
-litt prune 14
+afterimage --help
+afterimage doctor
+afterimage stats
+afterimage optimize
+afterimage compact
+afterimage list --limit 20
+afterimage search 'sensor calibration' --app com.apple.Safari
+afterimage search 'localization' --from 1789084800 --to 1789171200
+afterimage frame 12
+afterimage import ~/Desktop/screenshot.png
+afterimage export 12 ~/Desktop/moment.jpg
+afterimage delete 12
+afterimage prune 14
 ```
 
 `--from` is inclusive and `--to` exclusive; both accept Unix seconds. Frame timestamps are stored in Unix seconds and displayed in the Mac's local timezone. `list` and `search` accept `--app`, `--from`, `--to`, `--limit` (maximum 1000) and `--offset`. CLI export refuses to overwrite an existing file. Failures return a nonzero exit status and a JSON error on stderr.
 
-Use `LITT_HOME=/path/to/archive` for an isolated archive. The default is `~/Library/Application Support/Litt`. The database uses WAL mode and a busy timeout for concurrent app/CLI access. Directory permissions are restricted to the current user. Data is not independently encrypted by Litt; OS disk encryption is separate.
+Use `AFTERIMAGE_HOME=/path/to/archive` for an isolated archive. The default is `~/Library/Application Support/Afterimage`. The database uses WAL mode and a busy timeout for concurrent app/CLI access. Directory permissions are restricted to the current user. Data is not independently encrypted by Afterimage; OS disk encryption is separate.
 
 The agent usage guide is [docs/AGENT-SKILL.md](docs/AGENT-SKILL.md).
 
@@ -105,7 +105,7 @@ See [architecture and decisions](docs/ARCHITECTURE.md) and [validation](docs/VAL
 
 ```sh
 ./scripts/build.sh                 # C++ tests + native OCR/CLI integration
-./scripts/package.sh               # dist/Litt-macOS.zip
+./scripts/package.sh               # dist/Afterimage-macOS.zip
 python3 tests/native_ui.py          # SwiftUI checks; logged-in Mac required
 ```
 
@@ -116,11 +116,11 @@ Keyboard shortcuts: **⌘F** or **/** focuses search; **← / →** browses mome
 The generated document in `tests/fixture.png` is explicitly labeled test content and is never inserted into the user's archive automatically. To exercise the native UI with an isolated archive:
 
 ```sh
-export LITT_HOME="$(mktemp -d)"
-./litt import tests/fixture.png
-./build/Litt.app/Contents/MacOS/Litt --ui-smoke /tmp/litt-ui
+export AFTERIMAGE_HOME="$(mktemp -d)"
+./afterimage import tests/fixture.png
+./build/Afterimage.app/Contents/MacOS/Afterimage --ui-smoke /tmp/afterimage-ui
 # JSON check results and a native SwiftUI screenshot:
-# /tmp/litt-ui.json and /tmp/litt-ui.png
+# /tmp/afterimage-ui.json and /tmp/afterimage-ui.png
 ```
 
 `--ui-smoke` opens a test window, exercises SwiftUI state and C++ archive operations, writes results, then exits. It never starts recording. [scripts/draw-assets.swift](scripts/draw-assets.swift) regenerates the icon and OCR fixture.
@@ -141,7 +141,7 @@ The timeline fits the full loaded range: consecutive samples from the same app a
 
 Balanced mode stores recordings in short HEVC chunks, with lossless staging until a chunk is committed. C++ owns batching, metadata, retention, recovery and cache accounting; Apple's native encoder and decoder handle media. Search uses the original OCR text and timestamps. Settings → Capture offers Balanced, Sharper and Keep JPEG images. Existing video chunks are not repeatedly recompressed when quality settings change.
 
-Run `litt compact` to compress an older archive or finalize pending frames. It preserves every moment but HEVC is lossy. Keep a backup before migration. `litt optimize` remains available for byte-identical still-image sharing. Export through the CLI or app rather than assuming each moment has a JPEG file.
+Run `afterimage compact` to compress an older archive or finalize pending frames. It preserves every moment but HEVC is lossy. Keep a backup before migration. `afterimage optimize` remains available for byte-identical still-image sharing. Export through the CLI or app rather than assuming each moment has a JPEG file.
 
 `stats` separates `videoBytes`, `stillBytes`, `cacheBytes`, `workingBytes` and total `diskBytes`. Totals use file byte sizes with hard links counted once, not filesystem allocated blocks; external backups are not included. Preview files are bounded at eight / approximately 32 MiB; the decoded image cache has an advisory 64 MiB cost limit. Pending input batches close at 30 frames or approximately 32 MiB, allowing one oversized image.
 

@@ -12,7 +12,7 @@
 #include <memory>
 #include <sys/stat.h>
 #include <unistd.h>
-using namespace litt;
+using namespace afterimage;
 static std::unique_ptr<Store> archive;
 static std::string smokeOutput;
 
@@ -32,11 +32,11 @@ static json objJSON(id obj) {
 }
 
 static fs::path defaultRoot() {
-    const char* env = getenv("LITT_HOME");
+    const char* env = getenv("AFTERIMAGE_HOME");
     if (env && *env) {
         return env;
     }
-    return fs::path(str(NSHomeDirectory())) / "Library/Application Support/Litt";
+    return fs::path(str(NSHomeDirectory())) / "Library/Application Support/Afterimage";
 }
 
 static CGImageRef loadImage(NSString* path) {
@@ -159,8 +159,8 @@ static int cli(int argc, char** argv) {
         std::string command = argv[1];
         if (command == "--help" || command == "help" || command == "-h") {
             std::cout
-                << "Litt 0.1.0 — local, searchable screen memory\n\nUsage: "
-                   "litt [command]\n  (no command)                 Open the "
+                << "Afterimage 0.1.0 — local, searchable screen memory\n\nUsage: "
+                   "afterimage [command]\n  (no command)                 Open the "
                    "desktop app\n  search TEXT [options]        Search visible text "
                    "and titles (literal AND terms)\n  list [options]               "
                    "List captured/imported frames, newest first\n  frame ID          "
@@ -176,7 +176,7 @@ static int cli(int argc, char** argv) {
                    "frames older than DAYS\n  settings                     Read "
                    "capture/retention/exclusion settings\n\nOptions: --app BUNDLE_ID "
                    "--from EPOCH --to EPOCH --limit N --offset N\nAll results are "
-                   "JSON. LITT_HOME overrides the local archive "
+                   "JSON. AFTERIMAGE_HOME overrides the local archive "
                    "directory.\nThe app is not required for archive queries. "
                    "Start/stop recording in the app.\n";
             return 0;
@@ -283,19 +283,19 @@ static int cli(int argc, char** argv) {
 - (void)applicationDidFinishLaunching:(NSNotification*)n {
     (void)n;
     latestImageRequest = 0;
-    imageWorker = dispatch_queue_create("app.litt.images", DISPATCH_QUEUE_SERIAL);
-    worker = dispatch_queue_create("app.litt.processing", DISPATCH_QUEUE_SERIAL);
+    imageWorker = dispatch_queue_create("app.afterimage.images", DISPATCH_QUEUE_SERIAL);
+    worker = dispatch_queue_create("app.afterimage.processing", DISPATCH_QUEUE_SERIAL);
     preferences = archive->settings();
     captureState = "Paused";
     NSMenu* main = [[NSMenu alloc] init];
     NSMenuItem* appItem = [[NSMenuItem alloc] init];
     [main addItem:appItem];
     NSMenu* appMenu = [[NSMenu alloc] init];
-    [appMenu addItemWithTitle:@"About Litt"
+    [appMenu addItemWithTitle:@"About Afterimage"
                        action:@selector(orderFrontStandardAboutPanel:)
                 keyEquivalent:@""];
     [appMenu addItem:[NSMenuItem separatorItem]];
-    [appMenu addItemWithTitle:@"Quit Litt" action:@selector(terminate:) keyEquivalent:@"q"];
+    [appMenu addItemWithTitle:@"Quit Afterimage" action:@selector(terminate:) keyEquivalent:@"q"];
     appItem.submenu = appMenu;
     NSMenuItem* editItem = [[NSMenuItem alloc] initWithTitle:@"Edit" action:nil keyEquivalent:@""];
     NSMenu* edit = [[NSMenu alloc] initWithTitle:@"Edit"];
@@ -314,7 +314,7 @@ static int cli(int argc, char** argv) {
                             NSWindowStyleMaskFullSizeContentView
                     backing:NSBackingStoreBuffered
                       defer:NO];
-    window.title = @"Litt";
+    window.title = @"Afterimage";
     window.titleVisibility = NSWindowTitleHidden;
     window.titlebarAppearsTransparent = YES;
     window.movableByWindowBackground = YES;
@@ -338,10 +338,10 @@ static int cli(int argc, char** argv) {
               imageRoot:ns(archive->root().string())];
     window.contentViewController = nativeUI;
     [window setContentSize:NSMakeSize(1380, 900)];
-    if (!smokeOutput.empty() && getenv("LITT_SMOKE_LIGHT")) {
+    if (!smokeOutput.empty() && getenv("AFTERIMAGE_SMOKE_LIGHT")) {
         window.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
     }
-    if (!smokeOutput.empty() && getenv("LITT_SMOKE_COMPACT")) {
+    if (!smokeOutput.empty() && getenv("AFTERIMAGE_SMOKE_COMPACT")) {
         [window setContentSize:NSMakeSize(840, 578)];
     }
     [window center];
@@ -356,7 +356,7 @@ static int cli(int argc, char** argv) {
     }
     statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     statusItem.button.title = @"◉";
-    statusItem.button.toolTip = @"Litt — paused";
+    statusItem.button.toolTip = @"Afterimage — paused";
     {
         dispatch_async(worker, ^{
           try {
@@ -374,7 +374,7 @@ static int cli(int argc, char** argv) {
         });
     }
     NSMenu* menu = [[NSMenu alloc] init];
-    NSMenuItem* open = [menu addItemWithTitle:@"Open Litt"
+    NSMenuItem* open = [menu addItemWithTitle:@"Open Afterimage"
                                        action:@selector(showWindow:)
                                 keyEquivalent:@""];
     open.target = self;
@@ -464,7 +464,7 @@ static int cli(int argc, char** argv) {
     captureState = "Paused";
     recordingItem.title = @"Start recording";
     statusItem.button.title = @"◉";
-    statusItem.button.toolTip = @"Litt — paused";
+    statusItem.button.toolTip = @"Afterimage — paused";
     if (wasRecording) {
         dispatch_async(worker, ^{
           try {
@@ -489,7 +489,7 @@ static int cli(int argc, char** argv) {
     }
     if (!CGPreflightScreenCaptureAccess()) {
         CGRequestScreenCaptureAccess();
-        lastError = "Screen Recording permission is required. Enable Litt in "
+        lastError = "Screen Recording permission is required. Enable Afterimage in "
                     "System Settings → Privacy & Security → Screen & System Audio "
                     "Recording, then restart the app.";
         captureState = "Permission needed";
@@ -504,7 +504,7 @@ static int cli(int argc, char** argv) {
     });
     recordingItem.title = @"Pause recording";
     statusItem.button.title = @"●";
-    statusItem.button.toolTip = @"Litt — recording";
+    statusItem.button.toolTip = @"Afterimage — recording";
     timer = [NSTimer scheduledTimerWithTimeInterval:preferences["interval"].get<int>()
                                              target:self
                                            selector:@selector(tick:)
@@ -531,10 +531,10 @@ static int cli(int argc, char** argv) {
     std::string bundle = str(focused.bundleIdentifier), name = str(focused.localizedName);
     // Avoid capturing our UI or any part of the desktop while an excluded app is
     // focused.
-    if (bundle == "app.litt.local" ||
+    if (bundle == "app.afterimage.local" ||
         std::find(preferences["excluded"].begin(), preferences["excluded"].end(), json(bundle)) !=
             preferences["excluded"].end()) {
-        captureState = bundle == "app.litt.local" ? "Waiting · Litt is focused"
+        captureState = bundle == "app.afterimage.local" ? "Waiting · Afterimage is focused"
                                                         : "Waiting · excluded app";
         skipped++;
         return;
@@ -578,7 +578,7 @@ static int cli(int argc, char** argv) {
                                      NSMutableArray* excluded = [NSMutableArray array];
                                      for (SCRunningApplication* a in content.applications) {
                                          std::string b = str(a.bundleIdentifier);
-                                         if (b == "app.litt.local" ||
+                                         if (b == "app.afterimage.local" ||
                                              std::find(settings["excluded"].begin(),
                                                        settings["excluded"].end(),
                                                        json(b)) != settings["excluded"].end()) {
@@ -647,7 +647,7 @@ static int cli(int argc, char** argv) {
                                                         NSWorkspace.sharedWorkspace
                                                             .frontmostApplication.bundleIdentifier);
                                                     bool excluded =
-                                                        active == "app.litt."
+                                                        active == "app.afterimage."
                                                                   "local" ||
                                                         std::find(preferences["excluded"].begin(),
                                                                   preferences["excluded"].end(),
@@ -725,7 +725,7 @@ static int cli(int argc, char** argv) {
     json apps = json::array();
     for (NSRunningApplication* a in NSWorkspace.sharedWorkspace.runningApplications) {
         if (a.activationPolicy == NSApplicationActivationPolicyRegular && a.bundleIdentifier &&
-            ![a.bundleIdentifier isEqualToString:@"app.litt.local"]) {
+            ![a.bundleIdentifier isEqualToString:@"app.afterimage.local"]) {
             apps.push_back({{"name", str(a.localizedName)}, {"bundle", str(a.bundleIdentifier)}});
         }
     }
@@ -898,7 +898,7 @@ static int cli(int argc, char** argv) {
             auto path = archive->image(args.at("id"));
             NSSavePanel* panel = NSSavePanel.savePanel;
             panel.nameFieldStringValue =
-                ns("litt-" + std::to_string(args.at("id").get<long long>()) + ".jpg");
+                ns("afterimage-" + std::to_string(args.at("id").get<long long>()) + ".jpg");
             panel.allowedContentTypes = @[ UTTypeJPEG ];
             [panel beginSheetModalForWindow:window
                           completionHandler:^(NSModalResponse response) {

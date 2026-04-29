@@ -2,7 +2,7 @@
 #include <iostream>
 #include <thread>
 #include <unistd.h>
-using namespace litt;
+using namespace afterimage;
 
 void check(bool ok, const char* message) {
     if (!ok) {
@@ -11,7 +11,7 @@ void check(bool ok, const char* message) {
 }
 
 int main() {
-    auto path = fs::temp_directory_path() / ("litt-tests-" + std::to_string(getpid()));
+    auto path = fs::temp_directory_path() / ("afterimage-tests-" + std::to_string(getpid()));
     fs::remove_all(path);
     try {
         {

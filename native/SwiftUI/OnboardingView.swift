@@ -7,7 +7,7 @@ struct OnboardingView: View {
   private let titles = ["Find your way back.", "You choose what stays.", "Ready when you are."]
   private let descriptions = [
     "Return to something you saw. Screenshots and searchable text stay on this Mac.",
-    "Screen Recording permission lets Litt save your display. Capture stays paused until you press Record.",
+    "Screen Recording permission lets Afterimage save your display. Capture stays paused until you press Record.",
     "Press Start recording to begin saving moments and open your timeline. You can pause at any time.",
   ]
 
@@ -47,7 +47,7 @@ struct OnboardingView: View {
               Button("Check again") { Task { await model.refresh() } }
             }.buttonStyle(.link).font(.caption)
             Text(
-              "Already enabled? Turn Litt off and on in System Settings, then quit and reopen it."
+              "Already enabled? Turn Afterimage off and on in System Settings, then quit and reopen it."
             )
             .font(.caption).foregroundStyle(.secondary)
           }

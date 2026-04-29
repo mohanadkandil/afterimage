@@ -3,8 +3,8 @@
 import json, os, pathlib, subprocess, tempfile, time, sys
 binary = str(pathlib.Path(sys.argv[1]).resolve())
 fixture = pathlib.Path(__file__).with_name('fixture.png')
-with tempfile.TemporaryDirectory(prefix='litt-e2e-') as directory:
-    env = dict(os.environ, LITT_HOME=directory)
+with tempfile.TemporaryDirectory(prefix='afterimage-e2e-') as directory:
+    env = dict(os.environ, AFTERIMAGE_HOME=directory)
     def run(*args, success=True):
         p = subprocess.run([binary, *map(str,args)], env=env, text=True, capture_output=True, timeout=60)
         assert (p.returncode == 0) == success, (args,p.stdout,p.stderr)

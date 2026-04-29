@@ -4,7 +4,7 @@
 #include <chrono>
 #include <thread>
 
-using namespace litt;
+using namespace afterimage;
 
 namespace {
 NSURL* url(const fs::path& path) {

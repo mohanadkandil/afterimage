@@ -3,7 +3,7 @@ import Observation
 import SwiftUI
 
 @Observable @MainActor final class MemoryModel {
-  @ObservationIgnored weak var bridge: LittBridge?
+  @ObservationIgnored weak var bridge: AfterimageBridge?
   let root: URL
   var state = ArchiveState()
   var moments: [Moment] = []
@@ -37,7 +37,7 @@ import SwiftUI
   @ObservationIgnored private var loadingImages: Set<Int64> = []
   var current: Moment? { moments.first { $0.id == selected } }
   var index: Int { moments.firstIndex { $0.id == selected } ?? 0 }
-  init(bridge: LittBridge, root: String) {
+  init(bridge: AfterimageBridge, root: String) {
     self.bridge = bridge
     self.root = URL(fileURLWithPath: root)
     images.countLimit = 16
@@ -65,7 +65,7 @@ import SwiftUI
   func call(_ action: String, _ args: [String: Any] = [:]) async throws -> Data {
     guard let bridge else {
       throw NSError(
-        domain: "Litt", code: 2,
+        domain: "Afterimage", code: 2,
         userInfo: [NSLocalizedDescriptionKey: "The local engine is unavailable."])
     }
     let payload = try JSONSerialization.data(withJSONObject: args)
@@ -74,7 +74,7 @@ import SwiftUI
         if let error, !error.isEmpty {
           continuation.resume(
             throwing: NSError(
-              domain: "Litt", code: 1, userInfo: [NSLocalizedDescriptionKey: error]))
+              domain: "Afterimage", code: 1, userInfo: [NSLocalizedDescriptionKey: error]))
         } else {
           continuation.resume(returning: data ?? Data("{}".utf8))
         }

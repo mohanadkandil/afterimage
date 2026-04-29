@@ -7,14 +7,14 @@ import tempfile
 import time
 
 repo = Path(__file__).resolve().parents[1]
-binary = repo / 'build/Litt.app/Contents/MacOS/Litt'
+binary = repo / 'build/Afterimage.app/Contents/MacOS/Afterimage'
 for compact in (False, True):
     for populated in (False, True):
-        with tempfile.TemporaryDirectory(prefix='litt-native-ui-') as directory:
-            env = dict(os.environ, LITT_HOME=directory)
-            env.pop('LITT_SMOKE_COMPACT', None)
+        with tempfile.TemporaryDirectory(prefix='afterimage-native-ui-') as directory:
+            env = dict(os.environ, AFTERIMAGE_HOME=directory)
+            env.pop('AFTERIMAGE_SMOKE_COMPACT', None)
             if compact:
-                env['LITT_SMOKE_COMPACT'] = '1'
+                env['AFTERIMAGE_SMOKE_COMPACT'] = '1'
             if populated:
                 for age in (20, 0):
                     subprocess.run([str(binary), 'import', str(repo / 'tests/fixture.png'), '--time', str(time.time() - age)], env=env, check=True, capture_output=True, timeout=30)

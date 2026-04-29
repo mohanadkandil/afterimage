@@ -1,7 +1,7 @@
 #pragma once
 #include "store.hpp"
 #import <Cocoa/Cocoa.h>
-using litt::json;
+using afterimage::json;
 typedef void (^UICompletion)(json, std::string);
 typedef void (^UIRequest)(NSString*, json, UICompletion);
 @interface NativeUI : NSViewController

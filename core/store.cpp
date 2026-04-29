@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace litt {
+namespace afterimage {
 namespace {
 void syncMedia(const fs::path& path) {
     int fd = open(path.c_str(), O_RDONLY);
@@ -922,4 +922,4 @@ bool ChangeGate::changed(const std::vector<unsigned char>& pixels, const std::st
     }
     return take;
 }
-} // namespace litt
+} // namespace afterimage

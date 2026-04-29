@@ -22,11 +22,11 @@ Results: [populated](ui-populated-check.json), [empty](ui-empty-check.json), [co
 
 ## Pending permission-dependent validation
 
-The installed app's `litt doctor` reports `screenRecordingPermission: false`. Therefore **live ScreenCaptureKit capture, live app exclusion behavior, and lock/sleep cancellation have not been verified end to end on this Mac**. The external macOS harness also lacks screen-recording permission; native app snapshots were used for UI verification instead.
+The installed app's `afterimage doctor` reports `screenRecordingPermission: false`. Therefore **live ScreenCaptureKit capture, live app exclusion behavior, and lock/sleep cancellation have not been verified end to end on this Mac**. The external macOS harness also lacks screen-recording permission; native app snapshots were used for UI verification instead.
 
 To finish the live check:
 
-1. Open `~/Applications/Litt.app` and click Start recording.
+1. Open `~/Applications/Afterimage.app` and click Start recording.
 2. Grant its Screen Recording permission in macOS and restart the app.
 3. Start recording and switch to a document containing a distinctive phrase.
 4. Change the document, wait for another capture, pause from the menu bar, and search the phrase.
@@ -41,6 +41,6 @@ Glass and motion refinement: the local Swift 6.1/macOS 15.5 SDK build uses nativ
 
 Setup now occupies the root window rather than a sheet over the main interface. The completion guard requires both permission and recording state; native smoke verifies the negative path before opening the main view only inside the test. Real permission grant/start remains manual. Timeline app colors are derived from bundle IDs; horizontal scrolling uses SwiftUI ScrollView with a conventional mouse-wheel adapter. Physical input behavior has not been verified by the model-driven smoke.
 
-Permission update diagnosis: earlier app signatures used a designated requirement containing only cdhash. Each build changed that identity. The build now selects an available Apple Development certificate (or LITT_SIGNING_IDENTITY), with ad-hoc fallback only when no development certificate exists. The first transition to certificate signing can require reauthorization. Onboarding refreshes when the app becomes active and provides Check again plus off/on/reopen guidance.
+Permission update diagnosis: earlier app signatures used a designated requirement containing only cdhash. Each build changed that identity. The build now selects an available Apple Development certificate (or AFTERIMAGE_SIGNING_IDENTITY), with ad-hoc fallback only when no development certificate exists. The first transition to certificate signing can require reauthorization. Onboarding refreshes when the app becomes active and provides Check again plus off/on/reopen guidance.
 
 Current update supersedes the older SDK/material-only limitation: Xcode Swift 6.3.3 with explicit macOS 26.5 SDK compiles the real glassEffect branch. Settings is a separate NSWindow hosting SwiftUI, with automatic preference saving and storage byte counts decoded from the C++ state endpoint. Smoke checks call the mounted wheel region with mouse forward/back and accumulated trackpad deltas, asserting selected-frame changes; these cover input handling but not physical mouse hardware event delivery.

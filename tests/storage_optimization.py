@@ -9,9 +9,9 @@ import sys
 import tempfile
 
 binary = sys.argv[1]
-with tempfile.TemporaryDirectory(prefix="litt-storage-test-") as directory:
+with tempfile.TemporaryDirectory(prefix="afterimage-storage-test-") as directory:
     root = Path(directory)
-    env = dict(os.environ, LITT_HOME=directory)
+    env = dict(os.environ, AFTERIMAGE_HOME=directory)
 
     def run(*args):
         result = subprocess.run([binary, *args], env=env, check=True,

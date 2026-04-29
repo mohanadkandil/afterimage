@@ -1,20 +1,28 @@
-# Litt
+<p align="center">
+  <img src="docs/images/logo.png" alt="Afterimage logo" width="88" height="88">
+</p>
 
-Find something you saw on your Mac, and give your agent the context to help you with it.
+<h1 align="center">Afterimage</h1>
+
+<p align="center">Find something you saw on your Mac.<br>Give your agent the context to help you with it.</p>
+
+<p align="center">
+  <a href="#try-it">Get started</a> · <a href="GUIDE.md">Guide</a> · <a href="docs/AGENT-SKILL.md">Use with an agent</a>
+</p>
 
 ## Why I built it
 
 I wanted to ask, "How could I improve my workflow this week?" and give my agent something concrete to look at. That context lives across browser tabs and terminals. Reconstructing it all by hand is work in itself.
 
-Litt saves screen moments locally. You can search the text inside them, scroll back through your day, and open the frame you need. A terminal-capable agent can read the same archive when you ask it to.
+Afterimage saves screen moments locally. You can search the text inside them, scroll back through your day, and open the frame you need. A terminal-capable agent can read the same archive when you ask it to.
 
 ## What that could look like
 
-These are fictional examples, not real activity or measured outcomes. Litt provides search and a timeline. The conversational answers below would come from an agent using its CLI.
+These are fictional examples, not real activity or measured outcomes. Afterimage provides search and a timeline. The conversational answers below would come from an agent using its CLI.
 
 ### Review my week
 
-> How could I improve my workflow this week? Use my Litt history.
+> How could I improve my workflow this week? Use my Afterimage history.
 
 An agent could look through the week's saved frames and answer:
 
@@ -44,7 +52,7 @@ On a Mac with the build tools installed:
 
 ```sh
 ./scripts/build.sh
-./litt
+./afterimage
 ```
 
 Complete setup, grant Screen Recording permission, then press **Start recording**. The app starts paused. Use the gear to exclude apps or choose how long to keep history.

@@ -56,9 +56,9 @@ The new tests cover native HEVC automatic batching, index ordering, export, reop
 Work on a copy of an archive:
 
 ```sh
-LITT_HOME=/path/to/copy litt compact
-LITT_HOME=/path/to/copy litt stats
-LITT_HOME=/path/to/copy litt export FRAME_ID /tmp/frame.png
+AFTERIMAGE_HOME=/path/to/copy afterimage compact
+AFTERIMAGE_HOME=/path/to/copy afterimage stats
+AFTERIMAGE_HOME=/path/to/copy afterimage export FRAME_ID /tmp/frame.png
 ./scripts/build.sh
 python3 tests/native_ui.py
 ```

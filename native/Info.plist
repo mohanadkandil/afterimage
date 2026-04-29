@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>CFBundleExecutable</key><string>Litt</string>
-<key>CFBundleIdentifier</key><string>app.litt.local</string>
+<key>CFBundleExecutable</key><string>Afterimage</string>
+<key>CFBundleIdentifier</key><string>app.afterimage.local</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
-<key>CFBundleName</key><string>Litt</string>
-<key>CFBundleDisplayName</key><string>Litt</string>
+<key>CFBundleName</key><string>Afterimage</string>
+<key>CFBundleDisplayName</key><string>Afterimage</string>
 <key>CFBundleVersion</key><string>1</string>
 <key>CFBundleShortVersionString</key><string>0.1.0</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>NSHighResolutionCapable</key><true/>
 <key>NSPrincipalClass</key><string>NSApplication</string>
-<key>NSScreenCaptureUsageDescription</key><string>Save searchable screenshots to your local Litt archive when you enable recording.</string>
+<key>NSScreenCaptureUsageDescription</key><string>Save searchable screenshots to your local Afterimage archive when you enable recording.</string>
 </dict></plist>

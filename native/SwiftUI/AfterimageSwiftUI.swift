@@ -2,18 +2,18 @@ import AppKit
 import Observation
 import SwiftUI
 
-@objc(LittSwiftUI) @MainActor
-public final class LittSwiftUI: NSViewController, NSWindowDelegate {
+@objc(AfterimageSwiftUI) @MainActor
+public final class AfterimageSwiftUI: NSViewController, NSWindowDelegate {
   private let model: MemoryModel
   private var monitor: Any?
-  @objc public init(bridge: LittBridge, root: String) {
+  @objc public init(bridge: AfterimageBridge, root: String) {
     model = MemoryModel(bridge: bridge, root: root)
     super.init(nibName: nil, bundle: nil)
   }
   required init?(coder: NSCoder) { fatalError("init(coder:) is unavailable") }
   public override func loadView() {
     view = NSHostingView(
-      rootView: LittRootView(
+      rootView: AfterimageRootView(
         model: model, setupChanged: { [weak self] setup in self?.configureWindow(setup) },
         settingsChanged: { [weak self] visible in self?.presentSettings(visible) }))
   }
@@ -28,7 +28,7 @@ public final class LittSwiftUI: NSViewController, NSWindowDelegate {
         return event
       }
       if event.modifierFlags.contains(.command), event.charactersIgnoringModifiers == "f" {
-        NotificationCenter.default.post(name: .init("LittFocusSearch"), object: nil)
+        NotificationCenter.default.post(name: .init("AfterimageFocusSearch"), object: nil)
         return nil
       }
       if self.view.window?.firstResponder is NSTextView { return event }
@@ -48,7 +48,7 @@ public final class LittSwiftUI: NSViewController, NSWindowDelegate {
         return nil
       default:
         if event.characters == "/" {
-          NotificationCenter.default.post(name: .init("LittFocusSearch"), object: nil)
+          NotificationCenter.default.post(name: .init("AfterimageFocusSearch"), object: nil)
           return nil
         }
         return event
@@ -128,7 +128,7 @@ public final class LittSwiftUI: NSViewController, NSWindowDelegate {
       var checks: [String: Bool] = [
         "permissionGatesCompletion": setupWasGated,
         "firstLaunchIntroduction": introductionWasShown,
-        "swiftUIHost": view is NSHostingView<LittRootView>,
+        "swiftUIHost": view is NSHostingView<AfterimageRootView>,
         "nativeWindow": view.window != nil,
       ]
       if !model.moments.isEmpty {

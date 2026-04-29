@@ -43,13 +43,13 @@ Eight time-spaced screenshots, 24 re-encodes with ImageIO; OCR measured using Ap
 
 OCR recall means the fraction of distinct tokens from the original JPEG's OCR also recognized in the re-encoded image. It does not measure visual fidelity, newly hallucinated tokens, or ground-truth accuracy. HEIC was substantially smaller but slower to decode than the tested JPEG variant, and OCR differed on several samples. Codec quality numbers are not equivalent between formats. Existing JPEG quality remains 0.86; no archive images were re-encoded.
 
-HEVC video chunks may compress repeated screens more effectively, but would require a different archive, random-access decoding and careful deletion/retention behavior. Coast's aggregate storage numbers are not a controlled comparison, so this report makes no claim that Litt matches its storage efficiency.
+HEVC video chunks may compress repeated screens more effectively, but would require a different archive, random-access decoding and careful deletion/retention behavior. Coast's aggregate storage numbers are not a controlled comparison, so this report makes no claim that Afterimage matches its storage efficiency.
 
 ## Verification and reproduction
 
 - Build and CTest: core archive/search/retention/concurrency, OCR CLI integration, legacy v1 storage migration, idempotency and deleting shared images.
 - SwiftUI smoke checks: regular/compact, empty/populated, image loading, search, storage counts, onboarding gates and timeline mouse/trackpad handlers.
-- `litt optimize` returns before/after statistics. Test against a copy using `LITT_HOME=/path/to/copy`.
+- `afterimage optimize` returns before/after statistics. Test against a copy using `AFTERIMAGE_HOME=/path/to/copy`.
 - `scripts/benchmark-codecs.swift` accepts a JSON array of input image paths and an output JSON path. It does not modify input images or emit recognized text. Run with `xcrun swift scripts/benchmark-codecs.swift inputs.json results.json`.
 
 [Machine-readable measurements](storage-optimization-results.json).

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace litt {
+namespace afterimage {
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
@@ -79,4 +79,4 @@ class ChangeGate {
 
 std::string literalQuery(const std::string&);
 double now();
-} // namespace litt
+} // namespace afterimage
